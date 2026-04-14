@@ -4,10 +4,10 @@ build-backend = "hatchling.build"
 
 [project]
 name = "pyDEXPI"
-version = "1.1.0"
+version = "1.2.0"
 description = "Package containing the DEXPI data model in Python and a parser to load Proteus .xml data to the data model."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
 keywords = [
     "DEXPI, Proteus, P&ID",
 ]
@@ -23,11 +23,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-    "matplotlib>=3.8.4",
     "networkx>=3.2.1",
-    "SFILES2>=1.1.0",
-    "plotly>=5.24.1",
     "pydantic>=2.11.7",
+    "pandas>=2.3.2",
+    "openpyxl>=3.1.5",
+    "defusedxml>=0.7.1",
 ]
 
 [project.optional-dependencies]

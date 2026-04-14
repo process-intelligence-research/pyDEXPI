@@ -7,8 +7,8 @@ from __future__ import annotations
 import uuid
 from abc import ABC
 from datetime import datetime
-from enum import Enum
-from typing import Any
+from enum import StrEnum
+from typing import Any, ClassVar
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -16,11 +16,14 @@ from pydantic import BaseModel, ConfigDict, Field
 class DexpiBaseModel(ABC, BaseModel):
     """Base Model for the classes created for the dexpi data model, containing some overarching functionality"""
 
-    # Model congigurations
+    # Model configurations
     model_config = ConfigDict(validate_assignment=True)
 
     # Object ID, defaults to a uuid if not specified
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+
+    # Field to store proteus id if available
+    proteusId: str | None = Field(None)
 
     # Hash function
     def __hash__(self):
@@ -74,18 +77,18 @@ class DexpiSingletonBaseModel(BaseModel):
     """
 
     # Class-level attribute to store the singleton instance
-    _instance = None
+    _instance: ClassVar[DexpiSingletonBaseModel | None] = None
 
     def __new__(cls, *args, **kwargs):
         if cls._instance is None:
-            cls._instance = super().__new__(cls)
+            cls._instance = object.__new__(cls, *args, **kwargs)
         return cls._instance
 
 
 class ConceptualModel(DexpiBaseModel):
     """The conceptual content of a DexpiModel, i.e., engineering information independent from its graphical representation."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/dexpiModel/conceptualModel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/conceptualModel.py"
 
     # Compositional attributes:
     actuatingSystems: list[ActuatingSystem] = Field(
@@ -115,7 +118,7 @@ class ConceptualModel(DexpiBaseModel):
 class DexpiModel(DexpiBaseModel):
     """An entire DEXPI model. A DexpiModel is the root of the composition hierarchy."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/dexpiModel/dexpiModel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/dexpiModel.py"
 
     # Compositional attributes:
     conceptualModel: ConceptualModel | None = Field(
@@ -142,15 +145,15 @@ class DexpiModel(DexpiBaseModel):
 class IndustrialComplexParentStructure(DexpiBaseModel):
     """A PlantStructureItem that is a suitable ParentStructure of an IndustrialComplex."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/industrialComplexParentStructure.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/industrialComplexParentStructure.py"
     )
 
 
 class PlantAreaLocatedStructure(DexpiBaseModel):
     """A structure that can be located in an PlantArea."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantAreaLocatedStructure.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantAreaLocatedStructure.py"
 
     # Reference attributes:
     plantArea: PlantArea | None = Field(None, json_schema_extra={"attribute_category": "reference"})
@@ -159,17 +162,13 @@ class PlantAreaLocatedStructure(DexpiBaseModel):
 class PlantSectionParentStructure(DexpiBaseModel):
     """A PlantStructureItem that is a suitable ParentStructure of a PlantSection."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantSectionParentStructure.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantSectionParentStructure.py"
 
 
 class PlantSystemLocatedStructure(DexpiBaseModel):
     """A structure that can be located in a PlantSystem."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantSystemLocatedStructure.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantSystemLocatedStructure.py"
 
     # Reference attributes:
     plantSystem: PlantSystem | None = Field(
@@ -180,9 +179,7 @@ class PlantSystemLocatedStructure(DexpiBaseModel):
 class PlantTrainLocatedStructure(DexpiBaseModel):
     """A structure that can be located in a PlantTrain."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantTrainLocatedStructure.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantTrainLocatedStructure.py"
 
     # Reference attributes:
     plantTrain: PlantTrain | None = Field(
@@ -193,9 +190,7 @@ class PlantTrainLocatedStructure(DexpiBaseModel):
 class ProcessPlantParentStructure(DexpiBaseModel):
     """A PlantStructureItem that is a suitable ParentStructure of a ProcessPlant."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/processPlantParentStructure.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processPlantParentStructure.py"
 
 
 class TechnicalItem(
@@ -203,7 +198,7 @@ class TechnicalItem(
 ):
     """An item at the lowest level of the plant structure."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/technicalItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/technicalItem.py"
 
     # Reference attributes:
     parentStructure: TechnicalItemParentStructure | None = Field(
@@ -214,15 +209,13 @@ class TechnicalItem(
 class TechnicalItemParentStructure(DexpiBaseModel):
     """A PlantStructureItem that is a suitable ParentStructure of a TechnicalItem."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/technicalItemParentStructure.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/technicalItemParentStructure.py"
 
 
 class ChamberOwner(DexpiBaseModel):
     """An object that can have chambers."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/chamberOwner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/chamberOwner.py"
 
     # Compositional attributes:
     chambers: list[Chamber] = Field(
@@ -233,7 +226,7 @@ class ChamberOwner(DexpiBaseModel):
 class NozzleOwner(DexpiBaseModel):
     """An object that can have nozzles."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/nozzleOwner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nozzleOwner.py"
 
     # Compositional attributes:
     nozzles: list[Nozzle] = Field(
@@ -244,7 +237,7 @@ class NozzleOwner(DexpiBaseModel):
 class PipingConnection(DexpiBaseModel):
     """An elementary connection between two piping items."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingConnection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingConnection.py"
 
     # Reference attributes:
     sourceItem: PipingSourceItem | None = Field(
@@ -264,13 +257,13 @@ class PipingConnection(DexpiBaseModel):
 class PipingNetworkSegmentItem(DexpiBaseModel):
     """An item that can be part of a PipingNetworkSegment."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingNetworkSegmentItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingNetworkSegmentItem.py"
 
 
 class PipingNodeOwner(DexpiBaseModel):
     """An object that can have PipingNodes."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingNodeOwner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingNodeOwner.py"
 
     # Compositional attributes:
     nodes: list[PipingNode] = Field(
@@ -281,49 +274,43 @@ class PipingNodeOwner(DexpiBaseModel):
 class PipingSourceItem(DexpiBaseModel):
     """An item that can be the source of a PipingConnection (attribute SourceItem) or a PipingNetworkSegment (attribute SourceItem)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingSourceItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingSourceItem.py"
 
 
 class PipingTargetItem(DexpiBaseModel):
     """An item that can be the target of a PipingConnection (attribute TargetItem) or a PipingNetworkSegment (attribute TargetItem)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingTargetItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingTargetItem.py"
 
 
 class ActuatingElectricalLocation(DexpiBaseModel):
     """An object suitable as the ActuatingElectricalLocation of an ActuatingElectricalFunction."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/actuatingElectricalLocation.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/actuatingElectricalLocation.py"
 
 
 class SensingLocation(DexpiBaseModel):
     """An object than can act as a SensingLocation of a ProcessSignalGeneratingFunction."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/sensingLocation.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sensingLocation.py"
 
 
 class SignalConveyingFunctionSource(DexpiBaseModel):
     """An object than can act as the Source of a SignalConveyingFunction."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalConveyingFunctionSource.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/signalConveyingFunctionSource.py"
 
 
 class SignalConveyingFunctionTarget(DexpiBaseModel):
     """An object than can act as the Target of a SignalConveyingFunction."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalConveyingFunctionTarget.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/signalConveyingFunctionTarget.py"
 
 
 class CustomAttribute(DexpiBaseModel):
     """A custom attribute."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customAttribute.py"
 
     # Data attributes:
     attributeName: str = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -334,7 +321,7 @@ class CustomAttribute(DexpiBaseModel):
 class CustomAttributeOwner(DexpiBaseModel):
     """An object that can have custom attributes."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customAttributeOwner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customAttributeOwner.py"
 
     # Compositional attributes:
     customAttributes: list[CustomAttribute] = Field(
@@ -345,7 +332,9 @@ class CustomAttributeOwner(DexpiBaseModel):
 class CustomElectricalFrequencyAttribute(CustomAttribute):
     """A custom attribute with Value type NullableElectricalFrequency."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customElectricalFrequencyAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customElectricalFrequencyAttribute.py"
+    )
 
     # Data attributes:
     value: NullableElectricalFrequency = Field(
@@ -356,7 +345,7 @@ class CustomElectricalFrequencyAttribute(CustomAttribute):
 class CustomForceAttribute(CustomAttribute):
     """A custom attribute with Value type NullableForce."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customForceAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customForceAttribute.py"
 
     # Data attributes:
     value: NullableForce = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -365,7 +354,9 @@ class CustomForceAttribute(CustomAttribute):
 class CustomHeatTransferCoefficientAttribute(CustomAttribute):
     """A custom attribute with Value type NullableHeatTransferCoefficient."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customHeatTransferCoefficientAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customHeatTransferCoefficientAttribute.py"
+    )
 
     # Data attributes:
     value: NullableHeatTransferCoefficient = Field(
@@ -376,7 +367,7 @@ class CustomHeatTransferCoefficientAttribute(CustomAttribute):
 class CustomIntegerAttribute(CustomAttribute):
     """A custom attribute with Value type NullableInteger."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customIntegerAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customIntegerAttribute.py"
 
     # Data attributes:
     value: int | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -385,7 +376,7 @@ class CustomIntegerAttribute(CustomAttribute):
 class CustomLengthAttribute(CustomAttribute):
     """A custom attribute with Value type NullableLength."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customLengthAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customLengthAttribute.py"
 
     # Data attributes:
     value: NullableLength = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -394,7 +385,7 @@ class CustomLengthAttribute(CustomAttribute):
 class CustomMassAttribute(CustomAttribute):
     """A custom attribute with Value type NullableMass."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customMassAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMassAttribute.py"
 
     # Data attributes:
     value: NullableMass = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -403,9 +394,7 @@ class CustomMassAttribute(CustomAttribute):
 class CustomMassFlowRateAttribute(CustomAttribute):
     """A custom attribute with Value type NullableMassFlowRate."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customMassFlowRateAttribute.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMassFlowRateAttribute.py"
 
     # Data attributes:
     value: NullableMassFlowRate = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -414,7 +403,9 @@ class CustomMassFlowRateAttribute(CustomAttribute):
 class CustomMultiLanguageStringAttribute(CustomAttribute):
     """A custom attribute with Value type MultiLanguageString."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customMultiLanguageStringAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customMultiLanguageStringAttribute.py"
+    )
 
     # Data attributes:
     value: MultiLanguageString = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -423,7 +414,9 @@ class CustomMultiLanguageStringAttribute(CustomAttribute):
 class CustomNumberPerTimeIntervalAttribute(CustomAttribute):
     """A custom attribute with Value type NullableNumberPerTimeInterval."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customNumberPerTimeIntervalAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customNumberPerTimeIntervalAttribute.py"
+    )
 
     # Data attributes:
     value: NullableNumberPerTimeInterval = Field(
@@ -434,7 +427,7 @@ class CustomNumberPerTimeIntervalAttribute(CustomAttribute):
 class CustomObject(DexpiBaseModel):
     """The abstract base class of all custom classes."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customObject.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customObject.py"
 
     # Data attributes:
     typeName: str = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -444,7 +437,7 @@ class CustomObject(DexpiBaseModel):
 class CustomPercentageAttribute(CustomAttribute):
     """A custom attribute with Value type NullablePercentage."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customPercentageAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPercentageAttribute.py"
 
     # Data attributes:
     value: NullablePercentage = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -453,7 +446,7 @@ class CustomPercentageAttribute(CustomAttribute):
 class CustomPowerAttribute(CustomAttribute):
     """A custom attribute with Value type NullablePower."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customPowerAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPowerAttribute.py"
 
     # Data attributes:
     value: NullablePower = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -462,8 +455,8 @@ class CustomPowerAttribute(CustomAttribute):
 class CustomPressureAbsoluteAttribute(CustomAttribute):
     """A custom attribute with Value type NullablePressureAbsolute."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customPressureAbsoluteAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customPressureAbsoluteAttribute.py"
     )
 
     # Data attributes:
@@ -473,9 +466,7 @@ class CustomPressureAbsoluteAttribute(CustomAttribute):
 class CustomPressureGaugeAttribute(CustomAttribute):
     """A custom attribute with Value type NullablePressureGauge."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customPressureGaugeAttribute.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPressureGaugeAttribute.py"
 
     # Data attributes:
     value: NullablePressureGauge = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -484,7 +475,9 @@ class CustomPressureGaugeAttribute(CustomAttribute):
 class CustomRotationalFrequencyAttribute(CustomAttribute):
     """A custom attribute with Value type NullableRotationalFrequency."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customRotationalFrequencyAttribute.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customRotationalFrequencyAttribute.py"
+    )
 
     # Data attributes:
     value: NullableRotationalFrequency = Field(
@@ -495,7 +488,7 @@ class CustomRotationalFrequencyAttribute(CustomAttribute):
 class CustomStringAttribute(CustomAttribute):
     """A custom attribute with Value type NullableString."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customStringAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customStringAttribute.py"
 
     # Data attributes:
     value: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -504,7 +497,7 @@ class CustomStringAttribute(CustomAttribute):
 class CustomTemperatureAttribute(CustomAttribute):
     """A custom attribute with Value type NullableTemperature."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customTemperatureAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customTemperatureAttribute.py"
 
     # Data attributes:
     value: NullableTemperature = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -513,7 +506,7 @@ class CustomTemperatureAttribute(CustomAttribute):
 class CustomVoltageAttribute(CustomAttribute):
     """A custom attribute with Value type NullableVoltage."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customVoltageAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customVoltageAttribute.py"
 
     # Data attributes:
     value: NullableVoltage = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -522,7 +515,7 @@ class CustomVoltageAttribute(CustomAttribute):
 class CustomVolumeAttribute(CustomAttribute):
     """A custom attribute with Value type NullableVolume."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customVolumeAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customVolumeAttribute.py"
 
     # Data attributes:
     value: NullableVolume = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -531,15 +524,13 @@ class CustomVolumeAttribute(CustomAttribute):
 class CustomVolumeFlowRateAttribute(CustomAttribute):
     """A custom attribute with Value type NullableVolumeFlowRate."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customVolumeFlowRateAttribute.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customVolumeFlowRateAttribute.py"
 
     # Data attributes:
     value: NullableVolumeFlowRate = Field(..., json_schema_extra={"attribute_category": "data"})
 
 
-class ChamberFunctionClassification(str, Enum):
+class ChamberFunctionClassification(StrEnum):
     # Literals:
     NULL = "null"
     Cooling = "cooling"
@@ -548,35 +539,35 @@ class ChamberFunctionClassification(str, Enum):
     Tempering = "tempering"
 
 
-class CompositionBreakClassification(str, Enum):
+class CompositionBreakClassification(StrEnum):
     # Literals:
     NULL = "null"
     CompositionBreak = "composition break"
     NoCompositionBreak = "no composition break"
 
 
-class ConfidentialityClassification(str, Enum):
+class ConfidentialityClassification(StrEnum):
     # Literals:
     NULL = "null"
     ConfidentialInformation = "confidential"
     NonConfidentialInformation = "not confidential"
 
 
-class DetonationProofArtefactClassification(str, Enum):
+class DetonationProofArtefactClassification(StrEnum):
     # Literals:
     NULL = "null"
     DetonationProofArtefact = "detonation-proof artefact"
     NonDetonationProofArtefact = "non detonation-proof artefact"
 
 
-class ExplosionProofArtefactClassification(str, Enum):
+class ExplosionProofArtefactClassification(StrEnum):
     # Literals:
     NULL = "null"
     ExplosionProofArtefact = "explosion-proof artefact"
     NonExplosionProofArtefact = "non explosion-proof artefact"
 
 
-class FailActionClassification(str, Enum):
+class FailActionClassification(StrEnum):
     # Literals:
     NULL = "null"
     FailClose = "fail close"
@@ -584,28 +575,28 @@ class FailActionClassification(str, Enum):
     FailRetainPosition = "fail retain position"
 
 
-class FireResistantArtefactClassification(str, Enum):
+class FireResistantArtefactClassification(StrEnum):
     # Literals:
     NULL = "null"
     FireResistantArtefact = "fire-resistant artefact"
     NonFireResistantArtefact = "non fire-resistant artefact"
 
 
-class GmpRelevanceClassification(str, Enum):
+class GmpRelevanceClassification(StrEnum):
     # Literals:
     NULL = "null"
     GmpRelevantFunction = "GMP relevant"
     NonGmpRelevantFunction = "not GMP relevant"
 
 
-class GuaranteedSupplyFunctionClassification(str, Enum):
+class GuaranteedSupplyFunctionClassification(StrEnum):
     # Literals:
     NULL = "null"
     GuaranteedSupplyFunction = "guaranteed supply"
     NonGuaranteedSupplyFunction = "no guaranteed supply"
 
 
-class HeatTracingTypeClassification(str, Enum):
+class HeatTracingTypeClassification(StrEnum):
     # Literals:
     NULL = "null"
     ElectricalHeatTracingSystem = "electrical heat tracing system"
@@ -615,21 +606,21 @@ class HeatTracingTypeClassification(str, Enum):
     TubularHeatTracingSystem = "tubular heat tracing system"
 
 
-class InsulationBreakClassification(str, Enum):
+class InsulationBreakClassification(StrEnum):
     # Literals:
     NULL = "null"
     InsulationBreak = "inulation break"
     NoInsulationBreak = "no insulation break"
 
 
-class JacketedPipeClassification(str, Enum):
+class JacketedPipeClassification(StrEnum):
     # Literals:
     NULL = "null"
     JacketedPipe = "jacketed"
     UnjacketedPipe = "not jacketed"
 
 
-class LocationClassification(str, Enum):
+class LocationClassification(StrEnum):
     # Literals:
     NULL = "null"
     CentralLocation = "central"
@@ -637,14 +628,14 @@ class LocationClassification(str, Enum):
     Field = "field"
 
 
-class NominalDiameterBreakClassification(str, Enum):
+class NominalDiameterBreakClassification(StrEnum):
     # Literals:
     NULL = "null"
     NoNominalDiameterBreak = "no nominal diameter break"
     NominalDiameterBreak = "nominal diameter break"
 
 
-class NominalDiameterStandardClassification(str, Enum):
+class NominalDiameterStandardClassification(StrEnum):
     # Literals:
     NULL = "null"
     Din2448ObjectDn100 = "DN 100 (DIN 2448)"
@@ -714,7 +705,7 @@ class NominalDiameterStandardClassification(str, Enum):
     Nps8Artefact = "NPS 8"
 
 
-class NominalPressureStandardClassification(str, Enum):
+class NominalPressureStandardClassification(StrEnum):
     # Literals:
     NULL = "null"
     Class10000PsiArtefact = "Class 10000 psi"
@@ -763,7 +754,7 @@ class NominalPressureStandardClassification(str, Enum):
     En1333Pn6Artefact = "PN 6 (EN 1333)"
 
 
-class NumberOfPortsClassification(str, Enum):
+class NumberOfPortsClassification(StrEnum):
     # Literals:
     NULL = "null"
     FourPortValve = "4 port valve"
@@ -771,49 +762,49 @@ class NumberOfPortsClassification(str, Enum):
     TwoPortValve = "2 port valve"
 
 
-class OnHoldClassification(str, Enum):
+class OnHoldClassification(StrEnum):
     # Literals:
     NULL = "null"
     NotOnHold = "not on hold"
     OnHold = "on hold"
 
 
-class OperationClassification(str, Enum):
+class OperationClassification(StrEnum):
     # Literals:
     NULL = "null"
     ContinuousOperation = "continuous operation"
     IntermittentOperation = "intermittent operation"
 
 
-class PipingClassArtefactClassification(str, Enum):
+class PipingClassArtefactClassification(StrEnum):
     # Literals:
     NULL = "null"
     NonPipingClassArtefact = "non-piping-class artefact"
     PipingClassArtefact = "piping class artefact"
 
 
-class PipingClassBreakClassification(str, Enum):
+class PipingClassBreakClassification(StrEnum):
     # Literals:
     NULL = "null"
     NoPipingClassBreak = "no piping class break"
     PipingClassBreak = "piping class break"
 
 
-class PipingNetworkSegmentFlowClassification(str, Enum):
+class PipingNetworkSegmentFlowClassification(StrEnum):
     # Literals:
     NULL = "null"
     DualFlowPipingNetworkSegment = "dual flow"
     SingleFlowPipingNetworkSegment = "single flow"
 
 
-class PipingNetworkSegmentSlopeClassification(str, Enum):
+class PipingNetworkSegmentSlopeClassification(StrEnum):
     # Literals:
     NULL = "null"
     SlopedPipingNetworkSegment = "sloped"
     UnslopedPipingNetworkSegment = "not sloped"
 
 
-class PortStatusClassification(str, Enum):
+class PortStatusClassification(StrEnum):
     # Literals:
     NULL = "null"
     StatusHighHighHighPort = "HHH"
@@ -824,21 +815,21 @@ class PortStatusClassification(str, Enum):
     StatusLowPort = "L"
 
 
-class PrimarySecondaryPipingNetworkSegmentClassification(str, Enum):
+class PrimarySecondaryPipingNetworkSegmentClassification(StrEnum):
     # Literals:
     NULL = "null"
     PrimaryPipingNetworkSegment = "primary segment"
     SecondaryPipingNetworkSegment = "secondary segment"
 
 
-class QualityRelevanceClassification(str, Enum):
+class QualityRelevanceClassification(StrEnum):
     # Literals:
     NULL = "null"
     NonQualityRelevantFunction = "not quality relevant"
     QualityRelevantFunction = "quality relevant"
 
 
-class SignalConveyingTypeClassification(str, Enum):
+class SignalConveyingTypeClassification(StrEnum):
     # Literals:
     NULL = "null"
     CapillarySignalConveying = "capillary"
@@ -848,14 +839,14 @@ class SignalConveyingTypeClassification(str, Enum):
     PneumaticSignalConveying = "pneumatic"
 
 
-class SiphonClassification(str, Enum):
+class SiphonClassification(StrEnum):
     # Literals:
     NULL = "null"
     NoSiphon = "no siphon"
     Siphon = "siphon"
 
 
-class AreaUnit(str, Enum):
+class AreaUnit(StrEnum):
     # Literals:
     CentimetreSquared = "cm2"
     FootSquared = "ft2"
@@ -865,26 +856,26 @@ class AreaUnit(str, Enum):
     YardSquared = "yd2"
 
 
-class ElectricalFrequencyUnit(str, Enum):
+class ElectricalFrequencyUnit(StrEnum):
     # Literals:
     Hertz = "Hz"
     Kilohertz = "kHz"
     Megahertz = "MHz"
 
 
-class ForceUnit(str, Enum):
+class ForceUnit(StrEnum):
     # Literals:
     Kilonewton = "kN"
     Newton = "N"
 
 
-class HeatTransferCoefficientUnit(str, Enum):
+class HeatTransferCoefficientUnit(StrEnum):
     # Literals:
     KilowattPerMetreSquaredKelvin = "kW/(m2·K)"
     WattPerMetreSquaredKelvin = "W/(m2·K)"
 
 
-class LengthUnit(str, Enum):
+class LengthUnit(StrEnum):
     # Literals:
     Centimetre = "cm"
     Foot = "ft"
@@ -896,7 +887,7 @@ class LengthUnit(str, Enum):
     Nanometre = "nm"
 
 
-class MassFlowRateUnit(str, Enum):
+class MassFlowRateUnit(StrEnum):
     # Literals:
     KilogramPerHour = "kg/h"
     KilogramPerMinute = "kg/min"
@@ -906,7 +897,7 @@ class MassFlowRateUnit(str, Enum):
     PoundMassPerSecond = "lb/s"
 
 
-class MassUnit(str, Enum):
+class MassUnit(StrEnum):
     # Literals:
     Gram = "g"
     Kilogram = "kg"
@@ -914,25 +905,25 @@ class MassUnit(str, Enum):
     Tonne = "t"
 
 
-class NumberPerTimeIntervalUnit(str, Enum):
+class NumberPerTimeIntervalUnit(StrEnum):
     # Literals:
     ReciprocalMinute = "min-1"
     ReciprocalSecond = "s-1"
 
 
-class PercentageUnit(str, Enum):
+class PercentageUnit(StrEnum):
     # Literals:
     Percent = "???"
 
 
-class PowerUnit(str, Enum):
+class PowerUnit(StrEnum):
     # Literals:
     Kilowatt = "kW"
     Megawatt = "MW"
     Watt = "W"
 
 
-class PressureAbsoluteUnit(str, Enum):
+class PressureAbsoluteUnit(StrEnum):
     # Literals:
     Bar = "bar"
     Kilopascal = "kPa"
@@ -942,7 +933,7 @@ class PressureAbsoluteUnit(str, Enum):
     PoundForcePerInchSquared = "lbf/in2"
 
 
-class PressureGaugeUnit(str, Enum):
+class PressureGaugeUnit(StrEnum):
     # Literals:
     Bar = "bar"
     Kilopascal = "kPa"
@@ -952,27 +943,27 @@ class PressureGaugeUnit(str, Enum):
     PoundForcePerInchSquared = "lbf/in2"
 
 
-class RotationalFrequencyUnit(str, Enum):
+class RotationalFrequencyUnit(StrEnum):
     # Literals:
     ReciprocalMinute = "min-1"
     ReciprocalSecond = "s-1"
 
 
-class TemperatureUnit(str, Enum):
+class TemperatureUnit(StrEnum):
     # Literals:
     DegreeCelsius = "°C"
     DegreeFahrenheit = "°F"
     Kelvin = "K"
 
 
-class VoltageUnit(str, Enum):
+class VoltageUnit(StrEnum):
     # Literals:
     Kilovolt = "kV"
     Megavolt = "MV"
     Volt = "V"
 
 
-class VolumeFlowRateUnit(str, Enum):
+class VolumeFlowRateUnit(StrEnum):
     # Literals:
     FootCubedPerHour = "ft3/h"
     FootCubedPerMinute = "ft3/min"
@@ -983,7 +974,7 @@ class VolumeFlowRateUnit(str, Enum):
     MetreCubedPerSecond = "m3/s"
 
 
-class VolumeUnit(str, Enum):
+class VolumeUnit(StrEnum):
     # Literals:
     CentimetreCubed = "cm3"
     DecimetreCubed = "dm3"
@@ -999,7 +990,7 @@ class NullableArea(DexpiDataTypeBaseModel):
             - an Area is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullArea is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableArea.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableArea.py"
 
 
 class NullableForce(DexpiDataTypeBaseModel):
@@ -1007,13 +998,13 @@ class NullableForce(DexpiDataTypeBaseModel):
             - a Force is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullForce is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableForce.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableForce.py"
 
 
 class NullableFrequency(DexpiDataTypeBaseModel):
     """NullableFrequency is an application-dependent physical quantity type for the dimension T-1. It has 3 subtypes for different application areas."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableFrequency.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableFrequency.py"
 
 
 class NullableHeatTransferCoefficient(DexpiDataTypeBaseModel):
@@ -1021,7 +1012,9 @@ class NullableHeatTransferCoefficient(DexpiDataTypeBaseModel):
             - a HeatTransferCoefficient is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullHeatTransferCoefficient is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableHeatTransferCoefficient.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableHeatTransferCoefficient.py"
+    )
 
 
 class NullableLength(DexpiDataTypeBaseModel):
@@ -1029,7 +1022,7 @@ class NullableLength(DexpiDataTypeBaseModel):
             - a Length is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullLength is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableLength.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableLength.py"
 
 
 class NullableMass(DexpiDataTypeBaseModel):
@@ -1037,7 +1030,7 @@ class NullableMass(DexpiDataTypeBaseModel):
             - a Mass is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullMass is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableMass.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableMass.py"
 
 
 class NullableMassFlowRate(DexpiDataTypeBaseModel):
@@ -1045,7 +1038,7 @@ class NullableMassFlowRate(DexpiDataTypeBaseModel):
             - a MassFlowRate is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullMassFlowRate is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableMassFlowRate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableMassFlowRate.py"
 
 
 class NullableNumberPerTimeInterval(NullableFrequency):
@@ -1053,7 +1046,7 @@ class NullableNumberPerTimeInterval(NullableFrequency):
             - a NumberPerTimeInterval is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullNumberPerTimeInterval is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableNumberPerTimeInterval.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableNumberPerTimeInterval.py"
 
 
 class NullablePercentage(DexpiDataTypeBaseModel):
@@ -1061,7 +1054,7 @@ class NullablePercentage(DexpiDataTypeBaseModel):
             - a Percentage is an actual value for a quantity with a numerical value and a unit of measurement;
     - a NullPercentage is a null value that explicitly indicates the absence of an actual quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullablePercentage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullablePercentage.py"
 
 
 class NullablePower(DexpiDataTypeBaseModel):
@@ -1069,13 +1062,13 @@ class NullablePower(DexpiDataTypeBaseModel):
             - a Power is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullPower is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullablePower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullablePower.py"
 
 
 class NullablePressure(DexpiDataTypeBaseModel):
     """NullablePressure is an application-dependent physical quantity type for the dimension L-1MT-2. It has 2 subtypes for different application areas."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullablePressure.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullablePressure.py"
 
 
 class NullablePressureAbsolute(NullablePressure):
@@ -1083,9 +1076,7 @@ class NullablePressureAbsolute(NullablePressure):
             - a PressureAbsolute is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullPressureAbsolute is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullablePressureAbsolute.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullablePressureAbsolute.py"
 
 
 class NullablePressureGauge(NullablePressure):
@@ -1093,7 +1084,7 @@ class NullablePressureGauge(NullablePressure):
             - a PressureGauge is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullPressureGauge is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullablePressureGauge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullablePressureGauge.py"
 
 
 class NullableRotationalFrequency(NullableFrequency):
@@ -1101,9 +1092,7 @@ class NullableRotationalFrequency(NullableFrequency):
             - a RotationalFrequency is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullRotationalFrequency is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableRotationalFrequency.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableRotationalFrequency.py"
 
 
 class NullableTemperature(DexpiDataTypeBaseModel):
@@ -1111,7 +1100,7 @@ class NullableTemperature(DexpiDataTypeBaseModel):
             - a Temperature is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullTemperature is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableTemperature.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableTemperature.py"
 
 
 class NullableVoltage(DexpiDataTypeBaseModel):
@@ -1119,7 +1108,7 @@ class NullableVoltage(DexpiDataTypeBaseModel):
             - a Voltage is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullVoltage is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableVoltage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableVoltage.py"
 
 
 class NullableVolume(DexpiDataTypeBaseModel):
@@ -1127,7 +1116,7 @@ class NullableVolume(DexpiDataTypeBaseModel):
             - a Volume is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullVolume is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableVolume.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableVolume.py"
 
 
 class NullableVolumeFlowRate(DexpiDataTypeBaseModel):
@@ -1135,15 +1124,13 @@ class NullableVolumeFlowRate(DexpiDataTypeBaseModel):
             - a VolumeFlowRate is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullVolumeFlowRate is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableVolumeFlowRate.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableVolumeFlowRate.py"
 
 
 class NumberPerTimeInterval(NullableNumberPerTimeInterval):
     """An actual value for a physical quantity of type NullableNumberPerTimeInterval, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/numberPerTimeInterval.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/numberPerTimeInterval.py"
 
     # Data attributes:
     unit: NumberPerTimeIntervalUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1153,7 +1140,7 @@ class NumberPerTimeInterval(NullableNumberPerTimeInterval):
 class Percentage(NullablePercentage):
     """An actual value for a physical quantity of type NullablePercentage, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/percentage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/percentage.py"
 
     # Data attributes:
     unit: PercentageUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1163,7 +1150,7 @@ class Percentage(NullablePercentage):
 class Power(NullablePower):
     """An actual value for a physical quantity of type NullablePower, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/power.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/power.py"
 
     # Data attributes:
     unit: PowerUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1173,7 +1160,7 @@ class Power(NullablePower):
 class PressureAbsolute(NullablePressureAbsolute):
     """An actual value for a physical quantity of type NullablePressureAbsolute, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/pressureAbsolute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pressureAbsolute.py"
 
     # Data attributes:
     unit: PressureAbsoluteUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1183,7 +1170,7 @@ class PressureAbsolute(NullablePressureAbsolute):
 class PressureGauge(NullablePressureGauge):
     """An actual value for a physical quantity of type NullablePressureGauge, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/pressureGauge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pressureGauge.py"
 
     # Data attributes:
     unit: PressureGaugeUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1193,7 +1180,7 @@ class PressureGauge(NullablePressureGauge):
 class RotationalFrequency(NullableRotationalFrequency):
     """An actual value for a physical quantity of type NullableRotationalFrequency, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/rotationalFrequency.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotationalFrequency.py"
 
     # Data attributes:
     unit: RotationalFrequencyUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1203,7 +1190,7 @@ class RotationalFrequency(NullableRotationalFrequency):
 class Temperature(NullableTemperature):
     """An actual value for a physical quantity of type NullableTemperature, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/temperature.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/temperature.py"
 
     # Data attributes:
     unit: TemperatureUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1213,7 +1200,7 @@ class Temperature(NullableTemperature):
 class Voltage(NullableVoltage):
     """An actual value for a physical quantity of type NullableVoltage, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/voltage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/voltage.py"
 
     # Data attributes:
     unit: VoltageUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1223,7 +1210,7 @@ class Voltage(NullableVoltage):
 class Volume(NullableVolume):
     """An actual value for a physical quantity of type NullableVolume, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/volume.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/volume.py"
 
     # Data attributes:
     unit: VolumeUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1233,21 +1220,21 @@ class Volume(NullableVolume):
 class VolumeFlowRate(NullableVolumeFlowRate):
     """An actual value for a physical quantity of type NullableVolumeFlowRate, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/volumeFlowRate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/volumeFlowRate.py"
 
     # Data attributes:
     unit: VolumeFlowRateUnit = Field(..., json_schema_extra={"attribute_category": "data"})
     value: float = Field(..., json_schema_extra={"attribute_category": "data"})
 
 
-class AttributeRepresentationType(str, Enum):
+class AttributeRepresentationType(StrEnum):
     # Literals:
     Value = "Value"
     Units = "Units"
     ValueAndUnits = "ValueAndUnits"
 
 
-class DashStyle(str, Enum):
+class DashStyle(StrEnum):
     # Literals:
     Solid = "Solid"
     Dot = "Dot"
@@ -1259,14 +1246,14 @@ class DashStyle(str, Enum):
     DashShortDash = "DashShortDash"
 
 
-class FillStyle(str, Enum):
+class FillStyle(StrEnum):
     # Literals:
     Solid = "Solid"
     Transparent = "Transparent"
     Hatch = "Hatch"
 
 
-class TextAlignment(str, Enum):
+class TextAlignment(StrEnum):
     # Literals:
     LeftTop = "LeftTop"
     LeftCenter = "LeftCenter"
@@ -1283,7 +1270,7 @@ class Color(DexpiDataTypeBaseModel):
     """A color.
     Color is based on the RGB color model (e.g., see Wikipedia for an overview). For each channel red, green, and blue, Color has an attribute R, G, and B that gives the intensity of the channel. Intensities are given as values of UnsignedByte, i.e., integers in the range [0, 255]."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/color.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/color.py"
 
     # Data attributes:
     b: int = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1294,7 +1281,7 @@ class Color(DexpiDataTypeBaseModel):
 class Point(DexpiDataTypeBaseModel):
     """A point in the X-Y-plane."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/point.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/point.py"
 
     # Data attributes:
     x: float = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1304,7 +1291,7 @@ class Point(DexpiDataTypeBaseModel):
 class Stroke(DexpiDataTypeBaseModel):
     """A stroke defines the visual appearance of a line."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/stroke.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/stroke.py"
 
     # Data attributes:
     color: Color = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1315,25 +1302,25 @@ class Stroke(DexpiDataTypeBaseModel):
 class GraphicalElement(DexpiBaseModel):
     """A graphical element."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/graphicalElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphicalElement.py"
 
 
 class GraphicalPrimitive(GraphicalElement):
     """A primitive graphical element."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/graphicalPrimitive.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphicalPrimitive.py"
 
 
 class GraphicsGroup(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/graphicsGroup.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphicsGroup.py"
 
 
 class NodePosition(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/nodePosition.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/nodePosition.py"
 
     # Data attributes:
     position: Point = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1342,7 +1329,7 @@ class NodePosition(DexpiBaseModel):
 class PipingNodePosition(NodePosition):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipingNodePosition.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipingNodePosition.py"
 
     # Reference attributes:
     node: PipingNode | None = Field(None, json_schema_extra={"attribute_category": "reference"})
@@ -1351,7 +1338,7 @@ class PipingNodePosition(NodePosition):
 class PolyLine(GraphicalPrimitive):
     """A curve that consists of one or more chained straight sections."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/polyLine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/polyLine.py"
 
     # Data attributes:
     points: list[Point] = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1361,7 +1348,7 @@ class PolyLine(GraphicalPrimitive):
 class Polygon(GraphicalPrimitive):
     """A figure that is delimited by a closed chain of three or more straight sections."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/polygon.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/polygon.py"
 
     # Data attributes:
     fillStyle: FillStyle = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1372,7 +1359,7 @@ class Polygon(GraphicalPrimitive):
 class RepresentationGroup(GraphicsGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/representationGroup.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/representationGroup.py"
 
     # Compositional attributes:
     groups: list[GraphicsGroup] = Field(
@@ -1389,7 +1376,7 @@ class RepresentationGroup(GraphicsGroup):
 class RepresentationTypeGroup(GraphicsGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/representationTypeGroup.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/representationTypeGroup.py"
 
     # Compositional attributes:
     elements: list[GraphicalElement] = Field(
@@ -1400,7 +1387,7 @@ class RepresentationTypeGroup(GraphicsGroup):
 class Shape(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/shape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/shape.py"
 
     # Compositional attributes:
     primitives: list[GraphicalPrimitive] = Field(
@@ -1417,7 +1404,7 @@ class Shape(DexpiBaseModel):
 class ShapeCatalogue(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/shapeCatalogue.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/shapeCatalogue.py"
 
     # Compositional attributes:
     shapes: list[Shape] = Field(
@@ -1431,7 +1418,7 @@ class ShapeCatalogue(DexpiBaseModel):
 class ShapeUsage(GraphicalElement):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/shapeUsage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/shapeUsage.py"
 
     # Data attributes:
     isMirrored: bool = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -1447,37 +1434,37 @@ class ShapeUsage(GraphicalElement):
 class SignalOffPageConnectorShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalOffPageConnectorShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalOffPageConnectorShape.py"
 
 
 class Static(RepresentationTypeGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/static.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/static.py"
 
 
 class Symbol(RepresentationTypeGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/symbol.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/symbol.py"
 
 
 class SymbolShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/symbolShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/symbolShape.py"
 
 
 class TaggedPlantItemShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/taggedPlantItemShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/taggedPlantItemShape.py"
 
 
 class Text(GraphicalPrimitive):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/text.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/text.py"
 
     # Compositional attributes:
     template: TextTemplate | None = Field(
@@ -1497,7 +1484,7 @@ class Text(GraphicalPrimitive):
 class TextTemplate(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/textTemplate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/textTemplate.py"
 
     # Compositional attributes:
     fragments: list[TextTemplateFragment] = Field(
@@ -1508,13 +1495,13 @@ class TextTemplate(DexpiBaseModel):
 class TextTemplateFragment(DexpiBaseModel):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/textTemplateFragment.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/textTemplateFragment.py"
 
 
 class MultiLanguageString(DexpiDataTypeBaseModel):
     """A container for one or more SingleLanguageStrings. MultiLanguageString is used as the type of data attributes which have language-dependent string values: Each SingleLanguageString contains a NullableString Value and a Language tag."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/dataTypes/multiLanguageString.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/multiLanguageString.py"
 
     # Data attributes:
     singleLanguageStrings: list[SingleLanguageString] = Field(
@@ -1525,7 +1512,7 @@ class MultiLanguageString(DexpiDataTypeBaseModel):
 class SingleLanguageString(DexpiDataTypeBaseModel):
     """A SingleLanguageString contains a NullableString as its Value and a Language tag. SingleLanguageString is only used within MultiLanguageString. See the latter data type for more details."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/dataTypes/singleLanguageString.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/singleLanguageString.py"
 
     # Data attributes:
     language: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1535,7 +1522,7 @@ class SingleLanguageString(DexpiDataTypeBaseModel):
 class MetaData(CustomAttributeOwner):
     """A container for meta data about a DexpiModel."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/metaData/metaData.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/metaData.py"
 
     # Data attributes:
     approvalDateRepresentation: str | None = Field(
@@ -1628,13 +1615,13 @@ class MetaData(CustomAttributeOwner):
 class PlantStructureItem(CustomAttributeOwner):
     """Item of the plant break down structure."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantStructureItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructureItem.py"
 
 
 class PlantSystem(PlantStructureItem):
     """A plant system."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantSystem.py"
 
     # Data attributes:
     plantSystemIdentificationCode: str | None = Field(
@@ -1646,7 +1633,7 @@ class PlantSystem(PlantStructureItem):
 class PlantTrain(PlantStructureItem):
     """A plant train."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantTrain.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantTrain.py"
 
     # Data attributes:
     plantTrainIdentificationCode: str | None = Field(
@@ -1663,7 +1650,7 @@ class ProcessPlant(
 ):
     """A plant employed in carrying out chemical processes, including the required supporting processes (from http://data.posccaesar.org/rdl/RDS7151859)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/processPlant.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processPlant.py"
 
     # Data attributes:
     processPlantIdentificationCode: str | None = Field(
@@ -1686,7 +1673,7 @@ class Site(
 ):
     """A site as defined by ISA 95."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/site.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/site.py"
 
     # Data attributes:
     siteIdentificationCode: str | None = Field(
@@ -1703,7 +1690,7 @@ class Site(
 class AgitatorRotor(CustomAttributeOwner):
     """The machine component that is the rotating portion of an Agitator."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/agitatorRotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/agitatorRotor.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1722,7 +1709,7 @@ class AgitatorRotor(CustomAttributeOwner):
 class BriquettingRoller(CustomAttributeOwner):
     """An element of an Agglomerator that compresses bulk material into briquettes."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/briquettingRoller.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/briquettingRoller.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1735,7 +1722,7 @@ class BriquettingRoller(CustomAttributeOwner):
 class Chamber(CustomAttributeOwner):
     """A physical object that is an enclosed space (from http://data.posccaesar.org/rdl/RDS903151421)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/chamber.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/chamber.py"
 
     # Data attributes:
     chamberDescription: MultiLanguageString | None = Field(
@@ -1780,13 +1767,13 @@ class Chamber(CustomAttributeOwner):
 class ColumnInternalsArrangement(CustomAttributeOwner):
     """The internals of a column, e.g., trays or packings."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/columnInternalsArrangement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/columnInternalsArrangement.py"
 
 
 class ColumnPackingsArrangement(ColumnInternalsArrangement):
     """The packings of a column."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/columnPackingsArrangement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/columnPackingsArrangement.py"
 
     # Data attributes:
     height: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1800,7 +1787,7 @@ class ColumnPackingsArrangement(ColumnInternalsArrangement):
 class ColumnSection(CustomAttributeOwner):
     """A column section."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/columnSection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/columnSection.py"
 
     # Compositional attributes:
     internals: ColumnInternalsArrangement | None = Field(
@@ -1817,7 +1804,7 @@ class ColumnSection(CustomAttributeOwner):
 class ColumnTraysArrangement(ColumnInternalsArrangement):
     """The trays of a column."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/columnTraysArrangement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/columnTraysArrangement.py"
 
     # Data attributes:
     materialOfConstructionCode: str | None = Field(
@@ -1830,7 +1817,7 @@ class ColumnTraysArrangement(ColumnInternalsArrangement):
 class CoolingTowerRotor(CustomAttributeOwner):
     """A rotor of a cooling tower."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/coolingTowerRotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/coolingTowerRotor.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1845,7 +1832,7 @@ class CoolingTowerRotor(CustomAttributeOwner):
 class CrusherElement(CustomAttributeOwner):
     """A functional component of a Crusher."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/crusherElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/crusherElement.py"
 
     # Data attributes:
     crusherElementType: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1858,7 +1845,7 @@ class CrusherElement(CustomAttributeOwner):
 class Displacer(CustomAttributeOwner):
     """An object that has the purpose of displacing a fluid."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/displacer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/displacer.py"
 
     # Data attributes:
     materialOfConstructionCode: str | None = Field(
@@ -1876,7 +1863,7 @@ class Displacer(CustomAttributeOwner):
 class DryingChamber(CustomAttributeOwner):
     """A device that is a chamber, fixed or portable, for drying used as a component of an apparatus or a machine."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/dryingChamber.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/dryingChamber.py"
 
     # Data attributes:
     designVolumeFlowRate: NullableVolumeFlowRate | None = Field(
@@ -1894,7 +1881,7 @@ class DryingChamber(CustomAttributeOwner):
 class FilterUnit(CustomAttributeOwner):
     """The filtering unit as part of a filter."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/filterUnit.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/filterUnit.py"
 
     # Data attributes:
     efficiency: NullablePercentage | None = Field(
@@ -1927,7 +1914,7 @@ class FilterUnit(CustomAttributeOwner):
 class FilteringCentrifugeDrum(CustomAttributeOwner):
     """A drum being a component of a FilteringCentrifuge."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/filteringCentrifugeDrum.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/filteringCentrifugeDrum.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1942,7 +1929,7 @@ class FilteringCentrifugeDrum(CustomAttributeOwner):
 class GearBox(CustomAttributeOwner):
     """An artefact that consists of a gear casing with an arrangement of two or more gear-wheels transmitting rotating motion from the input shaft to the output shaft."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/gearBox.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/gearBox.py"
 
     # Data attributes:
     designInletPower: NullablePower | None = Field(
@@ -1963,7 +1950,7 @@ class GearBox(CustomAttributeOwner):
 class GrindingElement(CustomAttributeOwner):
     """A functional component of a Grinder."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/grindingElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/grindingElement.py"
 
     # Data attributes:
     grindingElementType: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -1976,7 +1963,7 @@ class GrindingElement(CustomAttributeOwner):
 class HeatExchangerRotor(CustomAttributeOwner):
     """A rotor as a component of a HeatExchanger."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/heatExchangerRotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/heatExchangerRotor.py"
 
     # Data attributes:
     materialOfConstructionCode: str | None = Field(
@@ -1990,7 +1977,7 @@ class HeatExchangerRotor(CustomAttributeOwner):
 class Impeller(CustomAttributeOwner):
     """An energy converter component that is an assembly of rotating vanes within an enclosure which is used to impart energy to or derive energy from a fluid through dynamic force (from http://data.posccaesar.org/rdl/RDS414539)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/impeller.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/impeller.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2006,7 +1993,7 @@ class Impeller(CustomAttributeOwner):
 class MixingElementAssembly(CustomAttributeOwner):
     """Assembly of mixing elements as part of a mixer."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/mixingElementAssembly.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mixingElementAssembly.py"
 
     # Data attributes:
     materialOfConstructionCode: str | None = Field(
@@ -2023,7 +2010,7 @@ class MixingElementAssembly(CustomAttributeOwner):
 class MotorAsComponent(CustomAttributeOwner):
     """A driver that is powered by electricity or internal combustion and is used as component of an apparatus or of a machine."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/motorAsComponent.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/motorAsComponent.py"
 
     # Data attributes:
     nominalPower: NullablePower | None = Field(
@@ -2045,7 +2032,7 @@ class Nozzle(
 ):
     """A physical object that has a protruding part through which a stream of fluid is directed (from http://data.posccaesar.org/rdl/RDS415214)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/nozzle.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nozzle.py"
 
     # Data attributes:
     nominalPressureNumericalValueRepresentation: str | None = Field(
@@ -2069,7 +2056,7 @@ class Nozzle(
 class PelletizerDisc(CustomAttributeOwner):
     """A rotating disc as a component of an Agglomerator."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/pelletizerDisc.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pelletizerDisc.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2081,7 +2068,7 @@ class PelletizerDisc(CustomAttributeOwner):
 class Screw(CustomAttributeOwner):
     """A shaft with a helical shaped shaft design (from http://data.posccaesar.org/rdl/RDS7219994)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/screw.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/screw.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2094,7 +2081,7 @@ class Screw(CustomAttributeOwner):
 class SedimentalCentrifugeDrum(CustomAttributeOwner):
     """A SedimentalCentrifugeDrum is a drum and a component of a SedimentalCentrifuge."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sedimentalCentrifugeDrum.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sedimentalCentrifugeDrum.py"
 
     # Data attributes:
     diameter: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2109,7 +2096,7 @@ class SedimentalCentrifugeDrum(CustomAttributeOwner):
 class SieveElement(CustomAttributeOwner):
     """A screening unit that is a component of a sieve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sieveElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sieveElement.py"
 
     # Data attributes:
     efficiency: NullablePercentage | None = Field(
@@ -2133,7 +2120,7 @@ class SieveElement(CustomAttributeOwner):
 class SprayNozzle(CustomAttributeOwner):
     """A nozzle where liquid is introduced under pressure (from http://data.posccaesar.org/rdl/RDS5855670)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sprayNozzle.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sprayNozzle.py"
 
     # Data attributes:
     designVolumeFlowRate: NullableVolumeFlowRate | None = Field(
@@ -2148,7 +2135,7 @@ class SprayNozzle(CustomAttributeOwner):
 class SubTaggedColumnSection(ColumnSection):
     """A sub tagged column section."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/subTaggedColumnSection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/subTaggedColumnSection.py"
 
     # Data attributes:
     subTagName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2157,7 +2144,7 @@ class SubTaggedColumnSection(ColumnSection):
 class TaggedPlantItem(CustomAttributeOwner, TechnicalItem):
     """A fully tagged item in a plant."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/taggedPlantItem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/taggedPlantItem.py"
 
     # Data attributes:
     tagName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2171,7 +2158,7 @@ class TaggedPlantItem(CustomAttributeOwner, TechnicalItem):
 class TubeBundle(CustomAttributeOwner):
     """A bundle that consists of several tubes assembled together allowing multiple flow paths from a single source (from http://data.posccaesar.org/rdl/RDS415259)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/tubeBundle.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/tubeBundle.py"
 
     # Data attributes:
     numberOfTubes: int | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2201,19 +2188,19 @@ class TubeBundle(CustomAttributeOwner):
 class DirectPipingConnection(PipingConnection):
     """A direct connection between two piping items, i.e. a connection that is not realized by a pipe."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/directPipingConnection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/directPipingConnection.py"
 
 
 class Pipe(CustomAttributeOwner, PipingConnection):
     """An elementary piece of piping, i.e., not interrupted by any item."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipe.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipe.py"
 
 
 class PipeOffPageConnector(CustomAttributeOwner, PipingNetworkSegmentItem, PipingNodeOwner):
     """A connector that indicates that a piping network segment is continued elsewhere, either on the same PID or on another PID. Graphically, it is usually represented as an arrow."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeOffPageConnector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeOffPageConnector.py"
 
     # Compositional attributes:
     connectorReference: PipeOffPageConnectorReference | None = Field(
@@ -2224,14 +2211,14 @@ class PipeOffPageConnector(CustomAttributeOwner, PipingNetworkSegmentItem, Pipin
 class PipeOffPageConnectorReference(CustomAttributeOwner):
     """A reference to a PipeOffPageConnector."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeOffPageConnectorReference.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeOffPageConnectorReference.py"
 
 
 class PipeOffPageConnectorReferenceByNumber(PipeOffPageConnectorReference):
     """A reference to a PipeOffPageConnector by drawing and connector number."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeOffPageConnectorReferenceByNumber.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeOffPageConnectorReferenceByNumber.py"
     )
 
     # Data attributes:
@@ -2253,7 +2240,7 @@ class PipingComponent(
 ):
     """A piping component"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingComponent.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingComponent.py"
 
     # Data attributes:
     fluidCode: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2271,7 +2258,7 @@ class PipingComponent(
 class PipingNetworkSegment(ActuatingElectricalLocation, CustomAttributeOwner, SensingLocation):
     """The piping limited by a Node and a Break, Node and Connector,  two Nodes, two Breaks, two Connectors or a Break and a Connector. The last five providing there are no Breaks or Connectors in between. In the last three cases the Segment will coincide with a Piping Branch (from http://data.posccaesar.org/rdl/RDS267704)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingNetworkSegment.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingNetworkSegment.py"
 
     # Compositional attributes:
     connections: list[PipingConnection] = Field(
@@ -2357,7 +2344,7 @@ class PipingNetworkSegment(ActuatingElectricalLocation, CustomAttributeOwner, Se
 class PipingNetworkSystem(CustomAttributeOwner, TechnicalItem):
     """A fluid system of interconnected piping network branches limited by Unit Operation Inlet/Outlet and  Piping Network Terminators. In this context Piping includes e.g. plumbing and tubing (from http://data.posccaesar.org/rdl/RDS270359)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingNetworkSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingNetworkSystem.py"
 
     # Compositional attributes:
     segments: list[PipingNetworkSegment] = Field(
@@ -2409,7 +2396,7 @@ class PipingNetworkSystem(CustomAttributeOwner, TechnicalItem):
 class PipingNode(CustomAttributeOwner):
     """A possible connection point for a PipingConnection."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipingNode.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipingNode.py"
 
     # Data attributes:
     nominalDiameterNumericalValueRepresentation: str | None = Field(
@@ -2435,7 +2422,7 @@ class PropertyBreak(
 ):
     """A symbol indicating a change in the piping properties."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/propertyBreak.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/propertyBreak.py"
 
     # Data attributes:
     compositionBreak: CompositionBreakClassification | None = Field(
@@ -2455,7 +2442,7 @@ class PropertyBreak(
 class SafetyValveOrFitting(PipingComponent):
     """A safety valve or fitting."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/safetyValveOrFitting.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/safetyValveOrFitting.py"
 
     # Data attributes:
     flowInPipingClassCode: str | None = Field(
@@ -2479,13 +2466,15 @@ class SafetyValveOrFitting(PipingComponent):
 class SpringLoadedAngleGlobeSafetyValve(SafetyValveOrFitting):
     """A spring-loaded angle globe safety valve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/springLoadedAngleGlobeSafetyValve.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/springLoadedAngleGlobeSafetyValve.py"
+    )
 
 
 class SpringLoadedGlobeSafetyValve(SafetyValveOrFitting):
     """A spring-loaded globe safety valve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/springLoadedGlobeSafetyValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/springLoadedGlobeSafetyValve.py"
 
 
 class ActuatingElectricalFunction(
@@ -2493,9 +2482,7 @@ class ActuatingElectricalFunction(
 ):
     """An actuation setting electrical function. It covers all types of electrical consumers, e.g., motors and heaters."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/actuatingElectricalFunction.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/actuatingElectricalFunction.py"
 
     # Data attributes:
     actuatingElectricalFunctionNumber: str | None = Field(
@@ -2514,9 +2501,7 @@ class ActuatingElectricalFunction(
 class ActuatingElectricalSystem(CustomAttributeOwner, TechnicalItem):
     """An assembly of artefacts that is designed to fulfill an ActuatingElectricalFunction."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/actuatingElectricalSystem.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/actuatingElectricalSystem.py"
 
     # Compositional attributes:
     customComponents: list[CustomActuatingElectricalSystemComponent] = Field(
@@ -2541,7 +2526,7 @@ class ActuatingFunction(
 ):
     """A function for acting control structures relating to the process."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/actuatingFunction.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/actuatingFunction.py"
 
     # Data attributes:
     actuatingFunctionNumber: str | None = Field(
@@ -2560,7 +2545,7 @@ class ActuatingFunction(
 class ActuatingSystem(CustomAttributeOwner, TechnicalItem):
     """An assembly of artefacts that is designed to fulfill an ActuatingFunction."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/actuatingSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/actuatingSystem.py"
 
     # Compositional attributes:
     controlledActuator: ControlledActuator | None = Field(
@@ -2586,7 +2571,7 @@ class ActuatingSystem(CustomAttributeOwner, TechnicalItem):
 class ControlledActuator(CustomAttributeOwner):
     """A transducer that is intended to convert energy (electric, mechanical, pneumatic or hydraulic) from an external source into kinetic energy (motion) in response to a signal or power input."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/controlledActuator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/controlledActuator.py"
 
     # Data attributes:
     deviceTypeName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2602,29 +2587,29 @@ class ControlledActuator(CustomAttributeOwner):
 class CustomActuatingElectricalSystemComponent(CustomAttributeOwner, CustomObject):
     """A custom component of an ActuatingElectricalSystem, i.e., a component other than ."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/customActuatingElectricalSystemComponent.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customActuatingElectricalSystemComponent.py"
+    )
 
 
 class CustomActuatingSystemComponent(CustomAttributeOwner, CustomObject):
     """A custom component of an ActuatingSystem, i.e., a component other than a ControlledActuator, an OperatedValveReference,  or  a Positioner."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/customActuatingSystemComponent.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customActuatingSystemComponent.py"
 
 
 class CustomProcessSignalGeneratingSystemComponent(CustomAttributeOwner, CustomObject):
     """A custom component of a ProcessSignalGeneratingSystem, i.e., a component other than a PrimaryElement  or  a Transmitter."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/customProcessSignalGeneratingSystemComponent.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customProcessSignalGeneratingSystemComponent.py"
+    )
 
 
 class ElectronicFrequencyConverter(CustomAttributeOwner):
     """An electronic AC converter for changing the frequency"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/electronicFrequencyConverter.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electronicFrequencyConverter.py"
 
     # Data attributes:
     subTagName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2633,9 +2618,7 @@ class ElectronicFrequencyConverter(CustomAttributeOwner):
 class InstrumentationLoopFunction(CustomAttributeOwner, TechnicalItem):
     """An identified collection of related ProcessInstrumentationFunctions that interact for a known purpose."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/instrumentationLoopFunction.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentationLoopFunction.py"
 
     # Data attributes:
     instrumentationLoopFunctionNumber: str | None = Field(
@@ -2651,7 +2634,7 @@ class InstrumentationLoopFunction(CustomAttributeOwner, TechnicalItem):
 class OperatedValveReference(CustomAttributeOwner):
     """A reference to an OperatedValve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/operatedValveReference.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/operatedValveReference.py"
 
     # Data attributes:
     subTagName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2663,7 +2646,7 @@ class OperatedValveReference(CustomAttributeOwner):
 class Positioner(CustomAttributeOwner):
     """A positioner."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/positioner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/positioner.py"
 
     # Data attributes:
     deviceTypeName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2673,7 +2656,7 @@ class Positioner(CustomAttributeOwner):
 class PrimaryElement(CustomAttributeOwner):
     """An artefact that converts the input variable into a signal suitable for measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/primaryElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/primaryElement.py"
 
     # Data attributes:
     subTagName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2687,9 +2670,7 @@ class ProcessInstrumentationFunction(
 ):
     """A requirement for instrumentation and/or control structures relating to Process Engineering."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/processInstrumentationFunction.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processInstrumentationFunction.py"
 
     # Compositional attributes:
     actuatingElectricalFunctions: list[ActuatingElectricalFunction] = Field(
@@ -2750,8 +2731,8 @@ class ProcessSignalGeneratingFunction(
 ):
     """A function for instrumentation and/or control structures relating to Process Engineering"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/processSignalGeneratingFunction.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/processSignalGeneratingFunction.py"
     )
 
     # Data attributes:
@@ -2772,9 +2753,7 @@ class ProcessSignalGeneratingFunction(
 class ProcessSignalGeneratingSystem(CustomAttributeOwner, TechnicalItem):
     """An assembly of artefacts that is designed to fulfill one or more ProcessSignalGeneratingFunctions."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/processSignalGeneratingSystem.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processSignalGeneratingSystem.py"
 
     # Compositional attributes:
     customComponents: list[CustomProcessSignalGeneratingSystemComponent] = Field(
@@ -2797,7 +2776,7 @@ class ProcessSignalGeneratingSystem(CustomAttributeOwner, TechnicalItem):
 class SignalConveyingFunction(CustomAttributeOwner):
     """A function for conveying a signal."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalConveyingFunction.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/signalConveyingFunction.py"
 
     # Data attributes:
     portStatus: PortStatusClassification | None = Field(
@@ -2823,13 +2802,13 @@ class SignalConveyingFunction(CustomAttributeOwner):
 class SignalLineFunction(SignalConveyingFunction):
     """Information flow function for signals."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalLineFunction.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/signalLineFunction.py"
 
 
 class SignalOffPageConnector(CustomAttributeOwner):
     """A signal connector that indicates that a SignalConveyingFunction is continued elsewhere, either on the same P&ID or on another P&ID. Graphically, it is usually represented as an arrow."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalOffPageConnector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/signalOffPageConnector.py"
 
     # Compositional attributes:
     connectorReference: SignalOffPageConnectorReference | None = Field(
@@ -2840,15 +2819,17 @@ class SignalOffPageConnector(CustomAttributeOwner):
 class SignalOffPageConnectorReference(CustomAttributeOwner):
     """A reference to a SignalOffPageConnector."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalOffPageConnectorReference.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/signalOffPageConnectorReference.py"
     )
 
 
 class SignalOffPageConnectorReferenceByNumber(SignalOffPageConnectorReference):
     """A reference to a SignalOffPageConnector by drawing and connector number."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalOffPageConnectorReferenceByNumber.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/signalOffPageConnectorReferenceByNumber.py"
+    )
 
     # Data attributes:
     referencedConnectorNumber: str | None = Field(
@@ -2862,7 +2843,7 @@ class SignalOffPageConnectorReferenceByNumber(SignalOffPageConnectorReference):
 class Transmitter(CustomAttributeOwner):
     """A detecting instrument that generates a process variable signal and converts it into an output signal."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/transmitter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/transmitter.py"
 
     # Data attributes:
     deviceTypeName: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -2872,7 +2853,7 @@ class Transmitter(CustomAttributeOwner):
 class CustomAreaAttribute(CustomAttribute):
     """A custom attribute with Value type NullableArea."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/customization/customAreaAttribute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customAreaAttribute.py"
 
     # Data attributes:
     value: NullableArea = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2881,7 +2862,7 @@ class CustomAreaAttribute(CustomAttribute):
 class Area(NullableArea):
     """An actual value for a physical quantity of type NullableArea, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/area.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/area.py"
 
     # Data attributes:
     unit: AreaUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2891,7 +2872,7 @@ class Area(NullableArea):
 class Force(NullableForce):
     """An actual value for a physical quantity of type NullableForce, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/force.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/force.py"
 
     # Data attributes:
     unit: ForceUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2901,9 +2882,7 @@ class Force(NullableForce):
 class HeatTransferCoefficient(NullableHeatTransferCoefficient):
     """An actual value for a physical quantity of type NullableHeatTransferCoefficient, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/heatTransferCoefficient.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/heatTransferCoefficient.py"
 
     # Data attributes:
     unit: HeatTransferCoefficientUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2913,7 +2892,7 @@ class HeatTransferCoefficient(NullableHeatTransferCoefficient):
 class Length(NullableLength):
     """An actual value for a physical quantity of type NullableLength, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/length.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/length.py"
 
     # Data attributes:
     unit: LengthUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2923,7 +2902,7 @@ class Length(NullableLength):
 class Mass(NullableMass):
     """An actual value for a physical quantity of type NullableMass, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/mass.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mass.py"
 
     # Data attributes:
     unit: MassUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2933,7 +2912,7 @@ class Mass(NullableMass):
 class MassFlowRate(NullableMassFlowRate):
     """An actual value for a physical quantity of type NullableMassFlowRate, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/massFlowRate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/massFlowRate.py"
 
     # Data attributes:
     unit: MassFlowRateUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -2943,103 +2922,97 @@ class MassFlowRate(NullableMassFlowRate):
 class NullArea(DexpiSingletonBaseModel, NullableArea):
     """A null value for a physical quantity of type NullableArea. The only instance of this singleton type is NULL_AREA."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullArea.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullArea.py"
 
 
 class NullForce(DexpiSingletonBaseModel, NullableForce):
     """A null value for a physical quantity of type NullableForce. The only instance of this singleton type is NULL_FORCE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullForce.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullForce.py"
 
 
 class NullHeatTransferCoefficient(DexpiSingletonBaseModel, NullableHeatTransferCoefficient):
     """A null value for a physical quantity of type NullableHeatTransferCoefficient. The only instance of this singleton type is NULL_HEAT_TRANSFER_COEFFICIENT."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullHeatTransferCoefficient.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullHeatTransferCoefficient.py"
 
 
 class NullLength(DexpiSingletonBaseModel, NullableLength):
     """A null value for a physical quantity of type NullableLength. The only instance of this singleton type is NULL_LENGTH."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullLength.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullLength.py"
 
 
 class NullMass(DexpiSingletonBaseModel, NullableMass):
     """A null value for a physical quantity of type NullableMass. The only instance of this singleton type is NULL_MASS."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullMass.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullMass.py"
 
 
 class NullMassFlowRate(DexpiSingletonBaseModel, NullableMassFlowRate):
     """A null value for a physical quantity of type NullableMassFlowRate. The only instance of this singleton type is NULL_MASS_FLOW_RATE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullMassFlowRate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullMassFlowRate.py"
 
 
 class NullNumberPerTimeInterval(DexpiSingletonBaseModel, NullableNumberPerTimeInterval):
     """A null value for a physical quantity of application type NullableNumberPerTimeInterval. The only instance of this singleton type is NULL_NUMBER_PER_TIME_INTERVAL."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullNumberPerTimeInterval.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullNumberPerTimeInterval.py"
 
 
 class NullPercentage(DexpiSingletonBaseModel, NullablePercentage):
     """A null value for a physical quantity of type NullablePercentage. The only instance of this singleton type is NULL_PERCENTAGE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullPercentage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullPercentage.py"
 
 
 class NullPower(DexpiSingletonBaseModel, NullablePower):
     """A null value for a physical quantity of type NullablePower. The only instance of this singleton type is NULL_POWER."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullPower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullPower.py"
 
 
 class NullPressureAbsolute(DexpiSingletonBaseModel, NullablePressureAbsolute):
     """A null value for a physical quantity of application type NullablePressureAbsolute. The only instance of this singleton type is NULL_PRESSURE_ABSOLUTE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullPressureAbsolute.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullPressureAbsolute.py"
 
 
 class NullPressureGauge(DexpiSingletonBaseModel, NullablePressureGauge):
     """A null value for a physical quantity of application type NullablePressureGauge. The only instance of this singleton type is NULL_PRESSURE_GAUGE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullPressureGauge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullPressureGauge.py"
 
 
 class NullRotationalFrequency(DexpiSingletonBaseModel, NullableRotationalFrequency):
     """A null value for a physical quantity of application type NullableRotationalFrequency. The only instance of this singleton type is NULL_ROTATIONAL_FREQUENCY."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullRotationalFrequency.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullRotationalFrequency.py"
 
 
 class NullTemperature(DexpiSingletonBaseModel, NullableTemperature):
     """A null value for a physical quantity of type NullableTemperature. The only instance of this singleton type is NULL_TEMPERATURE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullTemperature.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullTemperature.py"
 
 
 class NullVoltage(DexpiSingletonBaseModel, NullableVoltage):
     """A null value for a physical quantity of type NullableVoltage. The only instance of this singleton type is NULL_VOLTAGE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullVoltage.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullVoltage.py"
 
 
 class NullVolume(DexpiSingletonBaseModel, NullableVolume):
     """A null value for a physical quantity of type NullableVolume. The only instance of this singleton type is NULL_VOLUME."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullVolume.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullVolume.py"
 
 
 class NullVolumeFlowRate(DexpiSingletonBaseModel, NullableVolumeFlowRate):
     """A null value for a physical quantity of type NullableVolumeFlowRate. The only instance of this singleton type is NULL_VOLUME_FLOW_RATE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullVolumeFlowRate.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullVolumeFlowRate.py"
 
 
 class NullableElectricalFrequency(NullableFrequency):
@@ -3047,53 +3020,53 @@ class NullableElectricalFrequency(NullableFrequency):
             - an ElectricalFrequency is an actual value for a physical quantity with a numerical value and a unit of measurement;
     - a NullElectricalFrequency is a null value that explicitly indicates the absence of an actual physical quantity."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullableElectricalFrequency.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullableElectricalFrequency.py"
 
 
 class ActuatingElectricalFunctionShape(Shape):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingElectricalFunctionShape.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingElectricalFunctionShape.py"
     )
 
 
 class ActuatingElectricalSystemComponentShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingElectricalSystemComponentShape.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingElectricalSystemComponentShape.py"
+    )
 
 
 class ActuatingElectricalSystemShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingElectricalSystemShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingElectricalSystemShape.py"
 
 
 class ActuatingFunctionShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingFunctionShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingFunctionShape.py"
 
 
 class ActuatingSystemComponentShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingSystemComponentShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingSystemComponentShape.py"
 
 
 class ActuatingSystemShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingSystemShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingSystemShape.py"
 
 
 class AttributeRepresentation(TextTemplateFragment):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/attributeRepresentation.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/attributeRepresentation.py"
 
     # Data attributes:
     attributeName: str = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -3106,13 +3079,13 @@ class AttributeRepresentation(TextTemplateFragment):
 class Border(RepresentationTypeGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/border.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/border.py"
 
 
 class ConnectorLine(GraphicalPrimitive):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/connectorLine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/connectorLine.py"
 
     # Data attributes:
     innerPoints: list[Point] = Field(
@@ -3128,13 +3101,13 @@ class ConnectorLine(GraphicalPrimitive):
 class CustomSymbol(CustomObject, Symbol):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/customSymbol.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/customSymbol.py"
 
 
 class Diagram(RepresentationGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/diagram.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/diagram.py"
 
     # Data attributes:
     backgroundColor: Color = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -3148,7 +3121,7 @@ class Diagram(RepresentationGroup):
 class Ellipse(GraphicalPrimitive):
     """An ellipse."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/ellipse.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/ellipse.py"
 
     # Data attributes:
     center: Point = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -3162,7 +3135,7 @@ class Ellipse(GraphicalPrimitive):
 class EllipseArc(GraphicalPrimitive):
     """A segment of an ellipse."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/ellipseArc.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/ellipseArc.py"
 
     # Data attributes:
     center: Point = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -3177,45 +3150,45 @@ class EllipseArc(GraphicalPrimitive):
 class InstrumentationLoopFunctionShape(Shape):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/instrumentationLoopFunctionShape.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/instrumentationLoopFunctionShape.py"
     )
 
 
 class InstrumentationNodePosition(NodePosition):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/instrumentationNodePosition.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/instrumentationNodePosition.py"
 
 
 class InsulationSymbol(Symbol):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/insulationSymbol.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/insulationSymbol.py"
 
 
 class InsulationSymbolShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/insulationSymbolShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/insulationSymbolShape.py"
 
 
 class Label(RepresentationTypeGroup):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/label.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/label.py"
 
 
 class LabelShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/labelShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/labelShape.py"
 
 
 class LiteralText(TextTemplateFragment):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/literalText.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/literalText.py"
 
     # Data attributes:
     text: str = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -3224,243 +3197,243 @@ class LiteralText(TextTemplateFragment):
 class MPRelevanceLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/mPRelevanceLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/mPRelevanceLabel.py"
 
 
 class MeasuringSystemComponentShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/measuringSystemComponentShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/measuringSystemComponentShape.py"
 
 
 class MeasuringSystemNumberLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/measuringSystemNumberLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/measuringSystemNumberLabel.py"
 
 
 class MeasuringSystemShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/measuringSystemShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/measuringSystemShape.py"
 
 
 class NoteIdentifierLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/noteIdentifierLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/noteIdentifierLabel.py"
 
 
 class NoteShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/noteShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/noteShape.py"
 
 
 class NoteTextLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/noteTextLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/noteTextLabel.py"
 
 
 class NozzleShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/nozzleShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/nozzleShape.py"
 
 
 class NozzleStandardLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/nozzleStandardLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/nozzleStandardLabel.py"
 
 
 class OffPageConnectorDescriptionLabel(Label):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/offPageConnectorDescriptionLabel.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/offPageConnectorDescriptionLabel.py"
     )
 
 
 class OffPageConnectorNumberLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/offPageConnectorNumberLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/offPageConnectorNumberLabel.py"
 
 
 class PipeFlowArrow(Symbol):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipeFlowArrow.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipeFlowArrow.py"
 
 
 class PipeFlowArrowShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipeFlowArrowShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipeFlowArrowShape.py"
 
 
 class PipeOffPageConnectorShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipeOffPageConnectorShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipeOffPageConnectorShape.py"
 
 
 class PipeSlopeSymbol(Symbol):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipeSlopeSymbol.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipeSlopeSymbol.py"
 
 
 class PipeSlopeSymbolShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipeSlopeSymbolShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipeSlopeSymbolShape.py"
 
 
 class PipingClassBreakLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipingClassBreakLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipingClassBreakLabel.py"
 
 
 class PipingComponentShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipingComponentShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipingComponentShape.py"
 
 
 class PipingNetworkSegmentLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipingNetworkSegmentLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipingNetworkSegmentLabel.py"
 
 
 class PipingNetworkSystemLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/pipingNetworkSystemLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/pipingNetworkSystemLabel.py"
 
 
 class ProcessInstrumentationFunctionLabel(Label):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/processInstrumentationFunctionLabel.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/processInstrumentationFunctionLabel.py"
     )
 
 
 class ProcessInstrumentationFunctionShape(Shape):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/processInstrumentationFunctionShape.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/processInstrumentationFunctionShape.py"
     )
 
 
 class ProcessSignalGeneratingFunctionShape(Shape):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/processSignalGeneratingFunctionShape.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/processSignalGeneratingFunctionShape.py"
     )
 
 
 class PropertyBreakShape(Shape):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/propertyBreakShape.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/propertyBreakShape.py"
 
 
 class QualityRelevanceLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/qualityRelevanceLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/qualityRelevanceLabel.py"
 
 
 class ReducerLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/reducerLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/reducerLabel.py"
 
 
 class ReferencedPIDNumberLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/referencedPIDNumberLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/referencedPIDNumberLabel.py"
 
 
 class SafetyRelevanceLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/safetyRelevanceLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/safetyRelevanceLabel.py"
 
 
 class SafetyValveOrFittingLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/safetyValveOrFittingLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/safetyValveOrFittingLabel.py"
 
 
 class SignalConveyingFunctionLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalConveyingFunctionLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalConveyingFunctionLabel.py"
 
 
 class SignalHighHighHighLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalHighHighHighLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalHighHighHighLabel.py"
 
 
 class SignalHighHighLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalHighHighLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalHighHighLabel.py"
 
 
 class SignalHighLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalHighLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalHighLabel.py"
 
 
 class SignalLowLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalLowLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalLowLabel.py"
 
 
 class SignalLowLowLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalLowLowLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalLowLowLabel.py"
 
 
 class SignalLowLowLowLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/signalLowLowLowLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/signalLowLowLowLabel.py"
 
 
 class TypicalInformationLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/typicalInformationLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/typicalInformationLabel.py"
 
 
 class ValveLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/valveLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/valveLabel.py"
 
 
 class VendorNameLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/vendorNameLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/vendorNameLabel.py"
 
 
 class Enterprise(
@@ -3472,7 +3445,7 @@ class Enterprise(
 ):
     """An enterprise as defined by ISA 95."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/enterprise.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/enterprise.py"
 
     # Data attributes:
     enterpriseIdentificationCode: str | None = Field(
@@ -3490,7 +3463,7 @@ class IndustrialComplex(
 ):
     """An industrial complex as defined by ISO 10209:2012."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/industrialComplex.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/industrialComplex.py"
 
     # Data attributes:
     industrialComplexIdentificationCode: str | None = Field(
@@ -3509,7 +3482,7 @@ class IndustrialComplex(
 class PlantArea(PlantStructureItem):
     """An area as defined by ISA 95. The name PlantArea has been chosen to avoid confusion with the data type Area."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantArea.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantArea.py"
 
     # Data attributes:
     plantAreaIdentificationCode: str | None = Field(
@@ -3521,7 +3494,7 @@ class PlantArea(PlantStructureItem):
 class PlantSection(PlantAreaLocatedStructure, PlantStructureItem, TechnicalItemParentStructure):
     """A plant section as defined by ISO 10209:2012."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantStructure/plantSection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plantSection.py"
 
     # Data attributes:
     plantSectionIdentificationCode: str | None = Field(
@@ -3538,8 +3511,8 @@ class PlantSection(PlantAreaLocatedStructure, PlantStructureItem, TechnicalItemP
 class AlternatingCurrentMotorAsComponent(MotorAsComponent):
     """An electric motor driven by alternating electric current that is used as a component of an apparatus or of a machine."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/alternatingCurrentMotorAsComponent.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/alternatingCurrentMotorAsComponent.py"
     )
 
     # Data attributes:
@@ -3554,7 +3527,7 @@ class AlternatingCurrentMotorAsComponent(MotorAsComponent):
 class CombustionEngineAsComponent(MotorAsComponent):
     """An engine intended to deliver power by means of burning fuels that is used as component of an apparatus or of a machine."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/combustionEngineAsComponent.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/combustionEngineAsComponent.py"
 
     # Data attributes:
     fuelType: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -3563,7 +3536,7 @@ class CombustionEngineAsComponent(MotorAsComponent):
 class DirectCurrentMotorAsComponent(MotorAsComponent):
     """An electric motor for operation by direct current that is used as component of an apparatus or of a machine."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/directCurrentMotorAsComponent.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/directCurrentMotorAsComponent.py"
 
     # Data attributes:
     nominalVoltage: NullableVoltage | None = Field(
@@ -3574,7 +3547,7 @@ class DirectCurrentMotorAsComponent(MotorAsComponent):
 class Equipment(ChamberOwner, NozzleOwner, TaggedPlantItem):
     """An apparatus or machine."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/equipment.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment.py"
 
     # Compositional attributes:
     dryingChambers: list[DryingChamber] = Field(
@@ -3599,7 +3572,7 @@ class Equipment(ChamberOwner, NozzleOwner, TaggedPlantItem):
 class Extruder(Equipment):
     """A machine that has the capability of extruding (from http://data.15926.org/rdl/RDS394044551)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/extruder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/extruder.py"
 
     # Data attributes:
     designMassFlowRate: NullableMassFlowRate | None = Field(
@@ -3616,7 +3589,7 @@ class Extruder(Equipment):
 class Fan(Equipment):
     """An object that is capable of delivering or exhausting volumes of vapour or gas at low differential pressure (from http://data.15926.org/rdl/RDS415169)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/fan.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/fan.py"
 
     # Data attributes:
     designDifferentialPressure: NullablePressureAbsolute | None = Field(
@@ -3636,7 +3609,7 @@ class Fan(Equipment):
 class Feeder(Equipment):
     """A closed fluid transporter that is a gathering line tied into a trunk line (from http://data.15926.org/rdl/RDS300644)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/feeder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/feeder.py"
 
     # Data attributes:
     designMassFlowRate: NullableMassFlowRate | None = Field(
@@ -3656,13 +3629,13 @@ class Feeder(Equipment):
 class Filter(Equipment):
     """An apparatus or machine that is capable of filtering (from http://data.15926.org/rdl/RDS300689)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/filter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/filter.py"
 
 
 class GasFilter(Filter):
     """A filter that is specifically designed to filter a gas."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/gasFilter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/gasFilter.py"
 
     # Compositional attributes:
     filterUnit: FilterUnit | None = Field(
@@ -3687,7 +3660,7 @@ class GasFilter(Filter):
 class HeatExchanger(Equipment):
     """An apparatus or machine that has the capability of heat exchanging (from http://data.15926.org/rdl/RDS304199)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/heatExchanger.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/heatExchanger.py"
 
     # Data attributes:
     designHeatFlowRate: NullablePower | None = Field(
@@ -3707,7 +3680,7 @@ class HeatExchanger(Equipment):
 class Heater(Equipment):
     """An apparatus or machine that has the capability of heating."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/heater.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/heater.py"
 
     # Data attributes:
     designHeatFlowRate: NullablePower | None = Field(
@@ -3730,7 +3703,7 @@ class Heater(Equipment):
 class LiquidFilter(Filter):
     """A filter that is specifically designed to filter a liquid."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/liquidFilter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/liquidFilter.py"
 
     # Compositional attributes:
     filterUnit: FilterUnit | None = Field(
@@ -3755,7 +3728,7 @@ class LiquidFilter(Filter):
 class Mill(Equipment):
     """A physical object for grinding or pulverizing materials. Also a machine for shaping metal. In general a machine that manufactures by the continuous repetition of some simple action (from http://data.posccaesar.org/rdl/RDS11589220)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/mill.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mill.py"
 
     # Data attributes:
     designCapacityMassFlowRate: NullableMassFlowRate | None = Field(
@@ -3781,7 +3754,7 @@ class Mill(Equipment):
 class Mixer(Equipment):
     """An apparatus or machine that has the capability of mixing (from http://data.15926.org/rdl/RDS222370)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/mixer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mixer.py"
 
     # Compositional attributes:
     mixingElementAssemblies: list[MixingElementAssembly] = Field(
@@ -3792,7 +3765,7 @@ class Mixer(Equipment):
 class MobileTransportSystem(Equipment):
     """A mobile system that is intended to transport, store or load/unload material."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/mobileTransportSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mobileTransportSystem.py"
 
     # Data attributes:
     upperLimitLoadCapacity: NullableMass | None = Field(
@@ -3806,7 +3779,7 @@ class MobileTransportSystem(Equipment):
 class Motor(Equipment):
     """A driver that is powered by electricity or internal combustion (from http://data.15926.org/rdl/RDS7191198)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/motor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/motor.py"
 
     # Data attributes:
     nominalPower: NullablePower | None = Field(
@@ -3820,7 +3793,7 @@ class Motor(Equipment):
 class PackagingSystem(Equipment):
     """A system that is intended for the preparation of goods for transport, warehousing, logistics, sale, and end use (from http://data.15926.org/rdl/RDS2228725)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/packagingSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/packagingSystem.py"
 
     # Data attributes:
     designCapacityMassFlowRate: NullableMassFlowRate | None = Field(
@@ -3838,7 +3811,7 @@ class PackagingSystem(Equipment):
 class PlateHeatExchanger(HeatExchanger):
     """A heat exchanger that uses metal plates to transfer heat between two fluids."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/plateHeatExchanger.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plateHeatExchanger.py"
 
     # Data attributes:
     numberOfPlates: int | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -3853,7 +3826,7 @@ class PlateHeatExchanger(HeatExchanger):
 class ProcessColumn(Equipment):
     """A vertical vessel intended to enable chemical reactions or physical processes utilising differences in density of fluids and/or forced flow of fluid (from http://data.posccaesar.org/rdl/RDS4316825224)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/processColumn.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processColumn.py"
 
     # Compositional attributes:
     columnSections: list[SubTaggedColumnSection] = Field(
@@ -3869,7 +3842,7 @@ class ProcessColumn(Equipment):
 class Pump(Equipment):
     """A machine that is capable of pumping but may require parts and subsystems for that capability."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/pump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pump.py"
 
     # Data attributes:
     designPressureHead: NullableLength | None = Field(
@@ -3886,7 +3859,7 @@ class Pump(Equipment):
 class RadialFan(Fan):
     """A ‘fan’ with axial inlet and radial outlet (from http://data.posccaesar.org/rdl/RDS414089)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/radialFan.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/radialFan.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -3897,13 +3870,13 @@ class RadialFan(Fan):
 class RailWaggon(MobileTransportSystem):
     """A non self driving vehicle and mobile transport system intended to ride on rails"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/railWaggon.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/railWaggon.py"
 
 
 class ReciprocatingExtruder(Extruder):
     """An extruder that uses a piston in a batch process (from http://data.posccaesar.org/rdl/RDS412409911)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/reciprocatingExtruder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/reciprocatingExtruder.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -3914,7 +3887,7 @@ class ReciprocatingExtruder(Extruder):
 class ReciprocatingPump(Pump):
     """A positive displacement pump which contains a displacing element intended to be moved in a reciprocating movement to exert pressure on a fluid, typically moving within a cylindrical space (from http://data.posccaesar.org/rdl/RDS416969)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/reciprocatingPump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/reciprocatingPump.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -3933,7 +3906,7 @@ class ReciprocatingPump(Pump):
 class RotaryMixer(Mixer):
     """A Mixer machine that mixes by means of rotating components."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotaryMixer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotaryMixer.py"
 
     # Data attributes:
     designRotationalSpeed: NullableRotationalFrequency | None = Field(
@@ -3950,7 +3923,7 @@ class RotaryMixer(Mixer):
 class RotaryPump(Pump):
     """A positive displacement pump that consists of a chamber containing gears, cams, screws, vanes, plungers or similar elements actuated by relative rotation of the drive shaft or casing and which has no separate inlet and outlet valves (from http://data.posccaesar.org/rdl/RDS420749)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotaryPump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotaryPump.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -3969,7 +3942,7 @@ class RotaryPump(Pump):
 class RotatingExtruder(Extruder):
     """An extruder that operates in a continuous process. Typically using a screw to build up pressure in the melt. It can incorporate a mixing stage with a forming stage (from http://data.posccaesar.org/rdl/RDS394045941)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotatingExtruder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotatingExtruder.py"
 
     # Compositional attributes:
     screws: list[Screw] = Field(
@@ -3980,7 +3953,7 @@ class RotatingExtruder(Extruder):
 class Separator(Equipment):
     """A ‘device’ intended to separate different types of substances (from http://data.posccaesar.org/rdl/RDS2194378711)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/separator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/separator.py"
 
     # Data attributes:
     designVolumeFlowRate: NullableVolumeFlowRate | None = Field(
@@ -3997,13 +3970,13 @@ class Separator(Equipment):
 class Ship(MobileTransportSystem):
     """A watercraft and MobileTransportSystem that is a sea-going vessel of considerable size."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/ship.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/ship.py"
 
 
 class Sieve(Equipment):
     """A device that removes particles from a fluid when the fluid passes through or separates particles or molecules according to their size."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sieve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sieve.py"
 
     # Compositional attributes:
     sieveElements: list[SieveElement] = Field(
@@ -4019,13 +3992,13 @@ class Sieve(Equipment):
 class SpiralHeatExchanger(HeatExchanger):
     """A HeatExchanger in which a pair of plates is formed into a spiral."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/spiralHeatExchanger.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/spiralHeatExchanger.py"
 
 
 class StaticMixer(Mixer):
     """A physical object that is intended to mix fluid by means of diverging the flow with static obstacles or by increasing locally the velocity."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/staticMixer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/staticMixer.py"
 
     # Data attributes:
     upperLimitAllowableDesignPressureDrop: NullablePressureAbsolute | None = Field(
@@ -4036,13 +4009,13 @@ class StaticMixer(Mixer):
 class StationarySieve(Sieve):
     """A Sieve consisting of rakes or sieves, that, during operation, remains in a fixed position (from http://data.15926.org/rdl/RDS2226669)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/stationarySieve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/stationarySieve.py"
 
 
 class StationaryTransportSystem(Equipment):
     """A transport system that is intended to transport, store or load/unload material and that, as a whole, remains in one place."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/stationaryTransportSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/stationaryTransportSystem.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -4053,19 +4026,19 @@ class StationaryTransportSystem(Equipment):
 class SteamGenerator(Heater):
     """A boiler that is intended to generate steam (from http://data.posccaesar.org/rdl/RDS13306207)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/steamGenerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/steamGenerator.py"
 
 
 class TaggedColumnSection(ColumnSection, TaggedPlantItem):
     """A fully tagged column section."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/taggedColumnSection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/taggedColumnSection.py"
 
 
 class ThinFilmEvaporator(HeatExchanger):
     """A HeatExchanger and evaporator for the purification of temperature-sensitive products by evaporation, where a thin film of the liquid product on the inner side of a vertical evaporation pipe is generated by a rotating wiper system."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/thinFilmEvaporator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/thinFilmEvaporator.py"
 
     # Compositional attributes:
     rotor: HeatExchangerRotor | None = Field(
@@ -4087,19 +4060,19 @@ class ThinFilmEvaporator(HeatExchanger):
 class TransportableContainer(MobileTransportSystem):
     """A ‘container’ that is a transportable, with strength suitable to withstand shipment, storage, and handling (from http://data.posccaesar.org/rdl/RDS22164402859)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/transportableContainer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/transportableContainer.py"
 
 
 class Truck(MobileTransportSystem):
     """An automotive vehicle that is long, low and open intended for carrying goods by road (from http://data.posccaesar.org/rdl/RDS11524112)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/truck.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/truck.py"
 
 
 class TubularHeatExchanger(HeatExchanger):
     """An indirect contact heat exchanger that separates the hot and cold fluids by tubes (from http://data.posccaesar.org/rdl/RDS13971182)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/tubularHeatExchanger.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/tubularHeatExchanger.py"
 
     # Compositional attributes:
     tubeBundle: TubeBundle | None = Field(
@@ -4113,7 +4086,7 @@ class TubularHeatExchanger(HeatExchanger):
 class Turbine(Equipment):
     """An object that is a rotary mechanical device that extracts energy from a fluid flow and converts it into useful work (from http://data.15926.org/rdl/RDS313289)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/turbine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/turbine.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -4127,7 +4100,7 @@ class Turbine(Equipment):
 class Vessel(Equipment):
     """A container intended for storage and/or processing of fluids or solids."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/vessel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/vessel.py"
 
     # Data attributes:
     nominalCapacityVolume: NullableVolume | None = Field(
@@ -4144,7 +4117,7 @@ class Vessel(Equipment):
 class VibratingSieve(Sieve):
     """A Sieve where the product to be sieved is transported over the mesh by vibration of the latter (from http://data.15926.org/rdl/RDS2226670)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/vibratingSieve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/vibratingSieve.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -4155,7 +4128,7 @@ class VibratingSieve(Sieve):
 class WasteGasEmitter(Equipment):
     """A physical object that is intended to release/emit waste gas from the process."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/wasteGasEmitter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/wasteGasEmitter.py"
 
     # Data attributes:
     designVolumeFlowRate: NullableVolumeFlowRate | None = Field(
@@ -4166,7 +4139,7 @@ class WasteGasEmitter(Equipment):
 class Weigher(Equipment):
     """A functional object that is capable of weighing."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/weigher.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/weigher.py"
 
     # Data attributes:
     designMassFlowRate: NullableMassFlowRate | None = Field(
@@ -4180,13 +4153,13 @@ class Weigher(Equipment):
 class BreatherValve(SafetyValveOrFitting):
     """A breather valve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/breatherValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/breatherValve.py"
 
 
 class CheckValve(PipingComponent):
     """A valve that permits fluid to flow in one direction only (from http://data.posccaesar.org/rdl/RDS292229)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/checkValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/checkValve.py"
 
     # Data attributes:
     heatTracingType: HeatTracingTypeClassification | None = Field(
@@ -4212,13 +4185,13 @@ class CheckValve(PipingComponent):
 class CustomCheckValve(CheckValve, CustomObject):
     """A custom CheckValve, i.e., a CheckValve that is not covered by any of the other subclasses of CheckValve (GlobeCheckValve or SwingCheckValve)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customCheckValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customCheckValve.py"
 
 
 class CustomPipingComponent(CustomObject, PipingComponent):
     """A custom PipingComponent, i.e., a PipingComponent that is not covered by any of the other subclasses of PipingComponent (CheckValve, InlinePrimaryElement, OperatedValve, PipeFitting, or SafetyValveOrFitting)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customPipingComponent.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPipingComponent.py"
 
     # Data attributes:
     flowInPipingClassCode: str | None = Field(
@@ -4266,7 +4239,7 @@ class CustomPipingComponent(CustomObject, PipingComponent):
 class CustomSafetyValveOrFitting(CustomObject, SafetyValveOrFitting):
     """A custom SafetyValveOrFitting, i.e., a SafetyValveOrFitting that is not covered by any of the other subclasses of SafetyValveOrFitting (BreatherValve, FlameArrestor, RuptureDisc, SpringLoadedAngleGlobeSafetyValve, or SpringLoadedGlobeSafetyValve)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customSafetyValveOrFitting.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customSafetyValveOrFitting.py"
 
     # Data attributes:
     detonationProofArtefact: DetonationProofArtefactClassification | None = Field(
@@ -4283,7 +4256,7 @@ class CustomSafetyValveOrFitting(CustomObject, SafetyValveOrFitting):
 class FlameArrestor(SafetyValveOrFitting):
     """An ‘arrestor’ which is a trap covering an opening, e.g of a ventilation system or a pipe, to prevent flames from entering the system (from http://data.posccaesar.org/rdl/RDS1325028651)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flameArrestor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flameArrestor.py"
 
     # Data attributes:
     detonationProofArtefact: DetonationProofArtefactClassification | None = Field(
@@ -4300,25 +4273,25 @@ class FlameArrestor(SafetyValveOrFitting):
 class FlowInPipeOffPageConnector(PipeOffPageConnector, PipingSourceItem):
     """A pipe connector that indicates that a preceding part of a piping network segment is represented somewhere else, either on the same PID, or on some other PID."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flowInPipeOffPageConnector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowInPipeOffPageConnector.py"
 
 
 class FlowOutPipeOffPageConnector(PipeOffPageConnector, PipingTargetItem):
     """A pipe connector that indicates that a subsequent part of a piping network segment is represented somewhere else, either on the same PID, or on some other PID."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flowOutPipeOffPageConnector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowOutPipeOffPageConnector.py"
 
 
 class GlobeCheckValve(CheckValve):
     """A globe chack valve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/globeCheckValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/globeCheckValve.py"
 
 
 class InlinePrimaryElement(PipingComponent):
     """An inline primary element."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/inlinePrimaryElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/inlinePrimaryElement.py"
 
     # Data attributes:
     heatTracingType: HeatTracingTypeClassification | None = Field(
@@ -4343,13 +4316,13 @@ class InlinePrimaryElement(PipingComponent):
 class MassFlowMeasuringElement(InlinePrimaryElement):
     """A MASS FLOW MEASURING ELEMENT is a FLOW MEASURING ELEMENT that is used to measure MASS FLOW RATE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/massFlowMeasuringElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/massFlowMeasuringElement.py"
 
 
 class OperatedValve(PipingComponent):
     """A valve that includes an external means of operation. (E.g. handwheel / lever / actuator.) (from http://data.posccaesar.org/rdl/RDS11141590)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/operatedValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/operatedValve.py"
 
     # Data attributes:
     heatTracingType: HeatTracingTypeClassification | None = Field(
@@ -4381,7 +4354,7 @@ class OperatedValve(PipingComponent):
 class PipeFitting(PipingComponent):
     """A pipe fitting."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeFitting.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeFitting.py"
 
     # Data attributes:
     heatTracingType: HeatTracingTypeClassification | None = Field(
@@ -4407,20 +4380,20 @@ class PipeFitting(PipingComponent):
 class PipeFlangeSpacer(PipeFitting):
     """A ‘spacer’ and an ‘artefact’ that is intended to be inserted between two pipe flanged ends to provide the distance between the flanges required to insert a ‘pipe flange spade’ (from http://data.posccaesar.org/rdl/RDS472724)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeFlangeSpacer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeFlangeSpacer.py"
 
 
 class PipeFlangeSpade(PipeFitting):
     """A ‘line blind’ and an ‘artefact’ that is a circular plate with no central opening and holes to match mating flanged ends. It is also equipped with a handle (from http://data.posccaesar.org/rdl/RDS472679)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeFlangeSpade.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeFlangeSpade.py"
 
 
 class PipeOffPageConnectorObjectReference(PipeOffPageConnectorReference):
     """A reference to a PipeOffPageConnector by an association."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeOffPageConnectorObjectReference.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeOffPageConnectorObjectReference.py"
     )
 
     # Reference attributes:
@@ -4432,133 +4405,127 @@ class PipeOffPageConnectorObjectReference(PipeOffPageConnectorReference):
 class PipeReducer(PipeFitting):
     """An ‘artefact’ that has different nominal pipe size at the two ends, intended to connect pipes or piping components (from http://data.posccaesar.org/rdl/RDS416294)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeReducer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeReducer.py"
 
 
 class PipeTee(PipeFitting):
     """An ‘artefact’ that has three piping ends in T-shape, including a branch at 90 degrees (from http://data.posccaesar.org/rdl/RDS427724)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeTee.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeTee.py"
 
 
 class PlugValve(OperatedValve):
     """A rotary valve that has a quarter turn action in which the closure member is a cylindrical or tapered plug which operates by rotating on its axis and sealing against a downstream seat (from http://data.posccaesar.org/rdl/RDS421109)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/plugValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/plugValve.py"
 
 
 class PositiveDisplacementFlowMeter(InlinePrimaryElement):
     """A flow meter that measures the volumetric flow rate of a liquid or gas by separating the flow stream into known volumes and counting them over time (from http://data.posccaesar.org/rdl/RDS418094)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/positiveDisplacementFlowMeter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/positiveDisplacementFlowMeter.py"
 
 
 class RestrictionOrifice(PipeFitting):
     """A RESTRICTION ORIFICE is an ORIFICE PLATE that is intended for use as a restrictor."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/restrictionOrifice.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/restrictionOrifice.py"
 
 
 class RuptureDisc(SafetyValveOrFitting):
     """A physical object that is designed to burst at a certain excess pressure. It is part of a rupture disc assembly (from http://data.posccaesar.org/rdl/RDS8372601)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/ruptureDisc.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/ruptureDisc.py"
 
 
 class SightGlass(PipeFitting):
     """A physical object that is transparent and intended for viewing a vessel or piping system interior (from http://data.posccaesar.org/rdl/RDS648674)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/sightGlass.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sightGlass.py"
 
 
 class Silencer(PipeFitting):
     """A device intended to reduce a noise level (from http://data.posccaesar.org/rdl/RDS1049368591)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/silencer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/silencer.py"
 
 
 class SteamTrap(PipeFitting):
     """A trap that consists of a chamber into which condensed steam from steam pipes etc. is allowed to drain, and which automatically ejects it without permitting the escape of steam (from http://data.posccaesar.org/rdl/RDS5782388)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/steamTrap.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/steamTrap.py"
 
 
 class StraightwayValve(OperatedValve):
     """A valve that is straight, i.e. the centerlines perpendicular to the ends are in-line with no offset (from http://data.posccaesar.org/rdl/RDS9390905)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/straightwayValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/straightwayValve.py"
 
 
 class Strainer(PipeFitting):
     """A mechanical separator that is separating solid particles from a fluid by passing the fluid through a wire mesh, screen or metal plates containing perforations or slits (from http://data.posccaesar.org/rdl/RDS422504)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/strainer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/strainer.py"
 
 
 class SwingCheckValve(CheckValve):
     """A check valve that is a check valve where the closure member is a disc which swings freely on a hinge and which opens automatically when flow is established and closes automatically when flow ceases or is reversed (from http://data.posccaesar.org/rdl/RDS610424)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/swingCheckValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/swingCheckValve.py"
 
 
 class TurbineFlowMeter(InlinePrimaryElement):
     """A velocity flow meter that uses a multi bladed rotor to measure fluid flow rate in units of volumetric flow through a closed conduit (from http://data.posccaesar.org/rdl/RDS417914)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/turbineFlowMeter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/turbineFlowMeter.py"
 
 
 class VariableAreaFlowMeter(InlinePrimaryElement):
     """A flow meter consisting of a vertical tube with a conically shaped bore which widens to the top in which a solid body (float) is supported by the force exerted by the fluid stream (from http://data.posccaesar.org/rdl/RDS418229)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/variableAreaFlowMeter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/variableAreaFlowMeter.py"
 
 
 class VentilationDevice(PipeFitting):
     """A ‘device’ that allows gas or vapour to leave a container under excess pressure (from http://data.posccaesar.org/rdl/RDS1049335351)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/ventilationDevice.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/ventilationDevice.py"
 
 
 class VenturiTube(InlinePrimaryElement):
     """A ‘measuring device’ that has a constriction with a relative long passage with a smooth coned entry and exit (from http://data.posccaesar.org/rdl/RDS648044)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/venturiTube.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/venturiTube.py"
 
 
 class VolumeFlowMeasuringElement(InlinePrimaryElement):
     """A VOLUME FLOW MEASURING ELEMENT is a FLOW MEASURING ELEMENT that is used to measure VOLUME FLOW RATE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/volumeFlowMeasuringElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/volumeFlowMeasuringElement.py"
 
 
 class FlowDetector(ProcessSignalGeneratingSystem):
     """A detector that is intended to detect whether a fluid flow exists (from http://data.posccaesar.org/rdl/RDS1008719)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/flowDetector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowDetector.py"
 
 
 class FlowInSignalOffPageConnector(SignalConveyingFunctionSource, SignalOffPageConnector):
     """A signal connector that indicates that a preceding part of a signal conveying function is represented somewhere else, either on the same PID, or on some other PID."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/flowInSignalOffPageConnector.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowInSignalOffPageConnector.py"
 
 
 class FlowOutSignalOffPageConnector(SignalConveyingFunctionTarget, SignalOffPageConnector):
     """A signal connector that indicates that a subsequent part of a signal conveying function is represented somewhere else, either on the same PID, or on some other PID."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/flowOutSignalOffPageConnector.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowOutSignalOffPageConnector.py"
 
 
 class InlinePrimaryElementReference(PrimaryElement):
     """A reference to an InlinePrimaryElement that is part of a PipingNetworkSegment."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/inlinePrimaryElementReference.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/inlinePrimaryElementReference.py"
 
     # Reference attributes:
     inlinePrimaryElement: InlinePrimaryElement | None = Field(
@@ -4569,13 +4536,13 @@ class InlinePrimaryElementReference(PrimaryElement):
 class MeasuringLineFunction(SignalConveyingFunction):
     """Information flow function for measured values."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/measuringLineFunction.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/measuringLineFunction.py"
 
 
 class OfflinePrimaryElement(PrimaryElement):
     """A PrimaryElement that is not part of a PipingNetworkSegment."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/offlinePrimaryElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/offlinePrimaryElement.py"
 
     # Data attributes:
     connectionNominalDiameterNumericalValueRepresentation: str | None = Field(
@@ -4621,13 +4588,15 @@ class OfflinePrimaryElement(PrimaryElement):
 class ProcessControlFunction(ProcessInstrumentationFunction):
     """A requirement for control structures relating to Process Engineering."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/processControlFunction.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/processControlFunction.py"
 
 
 class SignalOffPageConnectorObjectReference(SignalOffPageConnectorReference):
     """A reference to a SignalOffPageConnector by an association."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/instrumentation/signalOffPageConnectorObjectReference.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/signalOffPageConnectorObjectReference.py"
+    )
 
     # Reference attributes:
     referencedConnector: SignalOffPageConnector | None = Field(
@@ -4638,7 +4607,7 @@ class SignalOffPageConnectorObjectReference(SignalOffPageConnectorReference):
 class ElectricalFrequency(NullableElectricalFrequency):
     """An actual value for a physical quantity of type NullableElectricalFrequency, i.e., a physical quantity that has a numerical value and a unit of measurement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/electricalFrequency.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electricalFrequency.py"
 
     # Data attributes:
     unit: ElectricalFrequencyUnit = Field(..., json_schema_extra={"attribute_category": "data"})
@@ -4648,77 +4617,75 @@ class ElectricalFrequency(NullableElectricalFrequency):
 class NullElectricalFrequency(DexpiSingletonBaseModel, NullableElectricalFrequency):
     """A null value for a physical quantity of application type NullableElectricalFrequency. The only instance of this singleton type is NULL_ELECTRICAL_FREQUENCY."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/physicalQuantities/nullElectricalFrequency.py"
-    )
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/nullElectricalFrequency.py"
 
 
 class ActuatingElectricalSystemNumberLabel(Label):
     """"""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingElectricalSystemNumberLabel.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingElectricalSystemNumberLabel.py"
     )
 
 
 class ActuatingSystemNumberLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/actuatingSystemNumberLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/actuatingSystemNumberLabel.py"
 
 
 class CustomLabel(CustomObject, Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/customLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/customLabel.py"
 
 
 class DeviceInformationLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/deviceInformationLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/deviceInformationLabel.py"
 
 
 class EquipmentBarLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/equipmentBarLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/equipmentBarLabel.py"
 
 
 class EquipmentTagNameLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/equipmentTagNameLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/equipmentTagNameLabel.py"
 
 
 class FailActionLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/failActionLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/failActionLabel.py"
 
 
 class FittingLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/fittingLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/fittingLabel.py"
 
 
 class InsulationBreakLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/insulationBreakLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/insulationBreakLabel.py"
 
 
 class InsulationLabel(Label):
     """"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_4/graphics/insulationLabel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_4/insulationLabel.py"
 
 
 class Agglomerator(Equipment):
     """A machine that is capable of agglomerating. It is usually vertically aligned."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/agglomerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/agglomerator.py"
 
     # Data attributes:
     designLiquidFeedMassFlowRate: NullableMassFlowRate | None = Field(
@@ -4744,7 +4711,7 @@ class Agglomerator(Equipment):
 class Agitator(Equipment):
     """An Agitator is a dynamic mixer that stirs or shakes fluids by reaction force from moving vanes."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/agitator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/agitator.py"
 
     # Compositional attributes:
     rotor: AgitatorRotor | None = Field(
@@ -4763,7 +4730,7 @@ class Agitator(Equipment):
 class AirCoolingSystem(HeatExchanger):
     """A cooling system which uses air as the cooling medium (from http://data.posccaesar.org/rdl/RDS277379)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/airCoolingSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/airCoolingSystem.py"
 
     # Compositional attributes:
     rotor: HeatExchangerRotor | None = Field(
@@ -4785,7 +4752,7 @@ class AirCoolingSystem(HeatExchanger):
 class AlternatingCurrentMotor(Motor):
     """An electric motor driven by alternating electric current (from http://data.posccaesar.org/rdl/RDS472994)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/alternatingCurrentMotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/alternatingCurrentMotor.py"
 
     # Data attributes:
     alternatingCurrentFrequency: NullableElectricalFrequency | None = Field(
@@ -4799,7 +4766,7 @@ class AlternatingCurrentMotor(Motor):
 class AxialFan(Fan):
     """A fan where the flow is along axis of shaft and the pressure ratio is relatively low (from http://data.posccaesar.org/rdl/RDS414044)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/axialFan.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/axialFan.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -4810,7 +4777,7 @@ class AxialFan(Fan):
 class BatchWeigher(Weigher):
     """A Weigher that is operating in batch mode."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/batchWeigher.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/batchWeigher.py"
 
     # Data attributes:
     designCapacityWeighingQuantities: NullableNumberPerTimeInterval | None = Field(
@@ -4824,7 +4791,7 @@ class BatchWeigher(Weigher):
 class Blower(Equipment):
     """A machine that is capable of blowing a medium volume flow."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/blower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/blower.py"
 
     # Data attributes:
     designDifferentialPressure: NullablePressureAbsolute | None = Field(
@@ -4844,13 +4811,13 @@ class Blower(Equipment):
 class Boiler(Heater):
     """A Heater that brings a liquid to its boiling point."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/boiler.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/boiler.py"
 
 
 class Burner(Equipment):
     """A physical object that is intended to release thermal energy by burning a combustible mixture (from http://data.posccaesar.org/rdl/RDS284399)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/burner.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/burner.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -4861,7 +4828,7 @@ class Burner(Equipment):
 class CentrifugalBlower(Blower):
     """A blower in which one ore more impellers accelerate the flow and where the main flow through the impeller is radial."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/centrifugalBlower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/centrifugalBlower.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -4872,7 +4839,7 @@ class CentrifugalBlower(Blower):
 class CentrifugalPump(Pump):
     """A dynamic pump utilizing impellers provided with vanes generating centrifugal force to achieve the required pressure head (from http://data.posccaesar.org/rdl/RDS416834)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/centrifugalPump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/centrifugalPump.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -4891,7 +4858,7 @@ class CentrifugalPump(Pump):
 class Centrifuge(Equipment):
     """A ‘separator’ and ‘machine’ that uses centrifugal force to separate phases of different densities (from http://data.posccaesar.org/rdl/RDS420974)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/centrifuge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/centrifuge.py"
 
     # Data attributes:
     designRotationalSpeed: NullableRotationalFrequency | None = Field(
@@ -4908,13 +4875,13 @@ class Centrifuge(Equipment):
 class Chimney(WasteGasEmitter):
     """A WasteGasEmitter that is intended to transport waste gas to a high location in the atmosphere."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/chimney.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/chimney.py"
 
 
 class CombustionEngine(Motor):
     """An engine intended to deliver power by means of burning fuels (from http://data.posccaesar.org/rdl/RDS1083734)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/combustionEngine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/combustionEngine.py"
 
     # Data attributes:
     fuelType: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -4923,7 +4890,7 @@ class CombustionEngine(Motor):
 class Compressor(Equipment):
     """A machine that has the capability of compressing a gas."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/compressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/compressor.py"
 
     # Data attributes:
     designVolumeFlowRate: NullableVolumeFlowRate | None = Field(
@@ -4937,7 +4904,7 @@ class Compressor(Equipment):
 class ContinuousWeigher(Weigher):
     """A Weigher that weighs a mass flow rate in continuous mode."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/continuousWeigher.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/continuousWeigher.py"
 
     # Data attributes:
     beltWidth: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -4946,7 +4913,7 @@ class ContinuousWeigher(Weigher):
 class Conveyor(StationaryTransportSystem):
     """A machine that is capable of conveying material."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/conveyor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/conveyor.py"
 
     # Data attributes:
     conveyingDistance: NullableLength | None = Field(
@@ -4964,7 +4931,7 @@ class Conveyor(StationaryTransportSystem):
 class CoolingTower(Equipment):
     """A cooler and an air cooled heat exchanger that is a tall structure through which air circulates by convection (from http://data.posccaesar.org/rdl/RDS14072341)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/coolingTower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/coolingTower.py"
 
     # Data attributes:
     designHeatFlowRate: NullablePower | None = Field(
@@ -4978,7 +4945,7 @@ class CoolingTower(Equipment):
 class Crusher(Mill):
     """A mill that uses pressure or impact to reduce the particle size of solid materials (from http://data.posccaesar.org/rdl/RDS11589940)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/crusher.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/crusher.py"
 
     # Compositional attributes:
     crusherElements: list[CrusherElement] = Field(
@@ -4989,7 +4956,7 @@ class Crusher(Mill):
 class CustomAgglomerator(Agglomerator, CustomObject):
     """A custom Agglomerator, i.e., an Agglomerator that is not covered by any of the other subclasses of Agglomerator (ReciprocatingPressureAgglomerator, RotatingGrowthAgglomerator, or RotatingPressureAgglomerator)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customAgglomerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customAgglomerator.py"
 
     # Compositional attributes:
     briquettingRollers: list[BriquettingRoller] = Field(
@@ -5014,7 +4981,7 @@ class CustomAgglomerator(Agglomerator, CustomObject):
 class CustomBlower(Blower, CustomObject):
     """A custom Blower, i.e., a Blower that is not covered by any of the other subclasses of Blower (AxialBlower or CentrifugalBlower)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customBlower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customBlower.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -5025,7 +4992,7 @@ class CustomBlower(Blower, CustomObject):
 class CustomCentrifuge(Centrifuge, CustomObject):
     """A custom Centrifuge, i.e., a Centrifuge that is not covered by any of the other subclasses of Centrifuge (FilteringCentrifuge or SedimentalCentrifuge)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customCentrifuge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customCentrifuge.py"
 
     # Compositional attributes:
     filteringCentrifugeDrum: FilteringCentrifugeDrum | None = Field(
@@ -5047,7 +5014,7 @@ class CustomCentrifuge(Centrifuge, CustomObject):
 class CustomCompressor(Compressor, CustomObject):
     """A custom Compressor, i.e., a Compressor that is not covered by any of the other subclasses of Compressor (AirEjector, AxialCompressor, CentrifugalCompressor, ReciprocatingCompressor, or RotaryCompressor)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customCompressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customCompressor.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -5072,7 +5039,7 @@ class CustomCompressor(Compressor, CustomObject):
 class CustomCoolingTower(CoolingTower, CustomObject):
     """A custom CoolingTower, i.e., a CoolingTower that is not covered by any of the other subclasses of CoolingTower (DryCoolingTower, SprayCooler, or WetCoolingTower)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customCoolingTower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customCoolingTower.py"
 
     # Compositional attributes:
     coolingTowerRotor: CoolingTowerRotor | None = Field(
@@ -5094,13 +5061,13 @@ class CustomCoolingTower(CoolingTower, CustomObject):
 class CustomEquipment(CustomObject, Equipment):
     """A custom Equipment, i.e., an Equipment that is not covered by any of the other subclasses of Equipment."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customEquipment.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customEquipment.py"
 
 
 class CustomExtruder(CustomObject, Extruder):
     """A custom Extruder, i.e., an Extruder that is not covered by any of the other subclasses of Extruder (ReciprocatingExtruder or RotatingExtruder)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customExtruder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customExtruder.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -5114,7 +5081,7 @@ class CustomExtruder(CustomObject, Extruder):
 class CustomFan(CustomObject, Fan):
     """A custom Fan, i.e., a Fan that is not covered by any of the other subclasses of Fan (AxialFan or RadialFan)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customFan.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customFan.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -5125,7 +5092,7 @@ class CustomFan(CustomObject, Fan):
 class CustomFilter(CustomObject, Filter):
     """A custom Filter, i.e., a Filter that is not covered by any of the other subclasses of Filter (GasFilter or LiquidFilter)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customFilter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customFilter.py"
 
     # Compositional attributes:
     filterUnit: FilterUnit | None = Field(
@@ -5150,7 +5117,7 @@ class CustomFilter(CustomObject, Filter):
 class CustomHeatExchanger(CustomObject, HeatExchanger):
     """A custom HeatExchanger, i.e., a HeatExchanger that is not covered by any of the other subclasses of HeatExchanger (AirCoolingSystem, ElectricHeater, PlateHeatExchanger, SpiralHeatExchanger, ThinFilmEvaporator, or TubularHeatExchanger)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customHeatExchanger.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customHeatExchanger.py"
 
     # Compositional attributes:
     rotor: HeatExchangerRotor | None = Field(
@@ -5183,13 +5150,13 @@ class CustomHeatExchanger(CustomObject, HeatExchanger):
 class CustomHeater(CustomObject, Heater):
     """A custom Heater, i.e., a Heater that is not covered by any of the other subclasses of Heater (Boiler, Furnace, or SteamGenerator)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customHeater.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customHeater.py"
 
 
 class CustomMill(CustomObject, Mill):
     """A custom Mill, i.e., a Mill that is not covered by any of the other subclasses of Mill (Crusher or Grinder)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customMill.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMill.py"
 
     # Compositional attributes:
     crusherElements: list[CrusherElement] = Field(
@@ -5203,7 +5170,7 @@ class CustomMill(CustomObject, Mill):
 class CustomMixer(CustomObject, Mixer):
     """A custom Mixer, i.e., a Mixer that is not covered by any of the other subclasses of Mixer (Kneader, RotaryMixer, or StaticMixer)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customMixer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMixer.py"
 
     # Data attributes:
     designRotationalSpeed: NullableRotationalFrequency | None = Field(
@@ -5220,7 +5187,7 @@ class CustomMixer(CustomObject, Mixer):
 class CustomMobileTransportSystem(CustomObject, MobileTransportSystem):
     """A custom MobileTransportSystem, i.e., a MobileTransportSystem that is not covered by any of the other subclasses of MobileTransportSystem (ForkliftTruck, RailWaggon, Ship, TransportableContainer, or Truck)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customMobileTransportSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMobileTransportSystem.py"
 
     # Data attributes:
     upperLimitDischargeHead: NullableLength | None = Field(
@@ -5231,7 +5198,7 @@ class CustomMobileTransportSystem(CustomObject, MobileTransportSystem):
 class CustomMotor(CustomObject, Motor):
     """A custom Motor, i.e., a Motor that is not covered by any of the other subclasses of Motor (AlternatingCurrentMotor, CombustionEngine, or DirectCurrentMotor)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customMotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customMotor.py"
 
     # Data attributes:
     alternatingCurrentFrequency: NullableElectricalFrequency | None = Field(
@@ -5246,7 +5213,7 @@ class CustomMotor(CustomObject, Motor):
 class CustomPump(CustomObject, Pump):
     """A custom Pump, i.e., a Pump that is not covered by any of the other subclasses of Pump (CentrifugalPump, EjectorPump, ReciprocatingPump, or RotaryPump)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customPump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPump.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -5271,7 +5238,7 @@ class CustomPump(CustomObject, Pump):
 class CustomSeparator(CustomObject, Separator):
     """A custom Separator, i.e., a Separator that is not covered by any of the other subclasses of Separator (ElectricalSeparator, GravitationalSeparator, MechanicalSeparator, or ScrubbingSeparator)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customSeparator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customSeparator.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -5285,7 +5252,7 @@ class CustomSeparator(CustomObject, Separator):
 class CustomSieve(CustomObject, Sieve):
     """A custom Sieve, i.e., a Sieve that is not covered by any of the other subclasses of Sieve (RevolvingSieve, StationarySieve, or VibratingSieve)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customSieve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customSieve.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -5302,8 +5269,8 @@ class CustomSieve(CustomObject, Sieve):
 class CustomStationaryTransportSystem(CustomObject, StationaryTransportSystem):
     """A custom StationaryTransportSystem, i.e., a StationaryTransportSystem that is not covered by any of the other subclasses of StationaryTransportSystem (Conveyor, Lift, or LoadingUnloadingSystem)."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customStationaryTransportSystem.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/customStationaryTransportSystem.py"
     )
 
     # Data attributes:
@@ -5337,7 +5304,7 @@ class CustomStationaryTransportSystem(CustomObject, StationaryTransportSystem):
 class CustomTurbine(CustomObject, Turbine):
     """A custom Turbine, i.e., a Turbine that is not covered by any of the other subclasses of Turbine (GasTurbine or SteamTurbine)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customTurbine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customTurbine.py"
 
     # Data attributes:
     designInletMassFlow: NullableMassFlowRate | None = Field(
@@ -5352,7 +5319,7 @@ class CustomTurbine(CustomObject, Turbine):
 class CustomVessel(CustomObject, Vessel):
     """A custom Vessel, i.e., a Vessel that is not covered by any of the other subclasses of Vessel (PressureVessel, Silo, or Tank)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customVessel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customVessel.py"
 
     # Data attributes:
     cylinderLength: NullableLength | None = Field(
@@ -5363,13 +5330,13 @@ class CustomVessel(CustomObject, Vessel):
 class CustomWasteGasEmitter(CustomObject, WasteGasEmitter):
     """A custom WasteGasEmitter, i.e., a WasteGasEmitter that is not covered by any of the other subclasses of WasteGasEmitter (Chimney or Flare)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customWasteGasEmitter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customWasteGasEmitter.py"
 
 
 class CustomWeigher(CustomObject, Weigher):
     """A custom Weigher, i.e., a Weigher that is not covered by any of the other subclasses of Weigher (BatchWeigher or ContinuousWeigher)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customWeigher.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customWeigher.py"
 
     # Data attributes:
     beltWidth: NullableLength | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -5384,7 +5351,7 @@ class CustomWeigher(CustomObject, Weigher):
 class DirectCurrentMotor(Motor):
     """An electric motor for operation by direct current (from http://data.posccaesar.org/rdl/RDS472949)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/directCurrentMotor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/directCurrentMotor.py"
 
     # Data attributes:
     nominalVoltage: NullableVoltage | None = Field(
@@ -5395,7 +5362,7 @@ class DirectCurrentMotor(Motor):
 class DryCoolingTower(CoolingTower):
     """A CoolingTower that is an indirect contact heat exchanger where, by full utilization of dry surface coil sections, no direct contact (and no evaporation) occurs between air and water; hence the water is cooled totally by sensible heat transfer (from http://data.15926.org/rdl/RDS14072386)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/dryCoolingTower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/dryCoolingTower.py"
 
     # Compositional attributes:
     coolingTowerRotor: CoolingTowerRotor | None = Field(
@@ -5414,7 +5381,7 @@ class DryCoolingTower(CoolingTower):
 class Dryer(Equipment):
     """An object that has the capability of drying (from http://data.15926.org/rdl/RDS1066939451)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/dryer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/dryer.py"
 
     # Data attributes:
     designMassFlowRate: NullableMassFlowRate | None = Field(
@@ -5434,7 +5401,7 @@ class Dryer(Equipment):
 class EjectorPump(Pump):
     """A pump which uses pressurized gas or liquid passing through an ejector to transport liquid (from http://data.posccaesar.org/rdl/RDS860624)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/ejectorPump.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/ejectorPump.py"
 
     # Data attributes:
     designCapacityMotiveFluid: NullableVolumeFlowRate | None = Field(
@@ -5445,7 +5412,7 @@ class EjectorPump(Pump):
 class ElectricGenerator(Equipment):
     """An electric rotating machine that transforms non-electric energy into electric energy (from http://data.posccaesar.org/rdl/RDS415709)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/electricGenerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electricGenerator.py"
 
     # Data attributes:
     designInletPower: NullablePower | None = Field(
@@ -5465,7 +5432,7 @@ class ElectricGenerator(Equipment):
 class ElectricHeater(HeatExchanger):
     """A heater in which electric energy is converted into heat for useful purposes (from http://data.posccaesar.org/rdl/RDS14070475)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/electricHeater.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electricHeater.py"
 
     # Compositional attributes:
     tubeBundle: TubeBundle | None = Field(
@@ -5481,7 +5448,7 @@ class ElectricHeater(HeatExchanger):
 class ElectricalSeparator(Separator):
     """A separator that uses electromagnetic, magnetic or electrostatic forces to separate phases."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/electricalSeparator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electricalSeparator.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -5492,7 +5459,7 @@ class ElectricalSeparator(Separator):
 class FilteringCentrifuge(Centrifuge):
     """A centrifuge intended to separate solids from liquids by centrifugal process based on particle size."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/filteringCentrifuge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/filteringCentrifuge.py"
 
     # Compositional attributes:
     filteringCentrifugeDrum: FilteringCentrifugeDrum | None = Field(
@@ -5508,13 +5475,13 @@ class FilteringCentrifuge(Centrifuge):
 class Flare(WasteGasEmitter):
     """An artefact and waste gas emitter that is intended to burn waste gas in secure distance from the plant or platform."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/flare.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flare.py"
 
 
 class ForkliftTruck(MobileTransportSystem):
     """A MobileTransportSystem and vehicle with power operated prongs that can be raised and lowered by will, for loading, transporting and unloading goods (from http://data.15926.org/rdl/RDS11590075)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/forkliftTruck.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/forkliftTruck.py"
 
     # Data attributes:
     upperLimitDischargeHead: NullableLength | None = Field(
@@ -5525,13 +5492,13 @@ class ForkliftTruck(MobileTransportSystem):
 class Furnace(Heater):
     """A physical object that is intended to induce a reaction in a process fluid by heating it (from http://data.posccaesar.org/rdl/RDS441134)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/furnace.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/furnace.py"
 
 
 class GasTurbine(Turbine):
     """A machine that is a rotary mechanical device extracting energy from a gas flow and converting it into useful work."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/gasTurbine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/gasTurbine.py"
 
     # Data attributes:
     fuelType: str | None = Field(None, json_schema_extra={"attribute_category": "data"})
@@ -5540,7 +5507,7 @@ class GasTurbine(Turbine):
 class GravitationalSeparator(Separator):
     """A fluid separator that is based on the difference in specific gravity for the substances to be separated (from http://data.15926.org/rdl/RDS16042131)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/gravitationalSeparator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/gravitationalSeparator.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -5554,7 +5521,7 @@ class GravitationalSeparator(Separator):
 class Grinder(Mill):
     """A Mill that has the capability of grinding,"""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/grinder.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/grinder.py"
 
     # Compositional attributes:
     grindingElements: list[GrindingElement] = Field(
@@ -5565,7 +5532,7 @@ class Grinder(Mill):
 class HeatedSurfaceDryer(Dryer):
     """A Dryer that dries a material by radiation and/or conduction caused by a heated surface (from http://data.15926.org/rdl/RDS2228449)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/heatedSurfaceDryer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/heatedSurfaceDryer.py"
 
     # Data attributes:
     heatedSurfaceArea: NullableArea | None = Field(
@@ -5576,7 +5543,7 @@ class HeatedSurfaceDryer(Dryer):
 class Kneader(Mixer):
     """A machine that is capable of mixing and working into a uniform mass by, or as if by, folding, pressing, and stretching."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/kneader.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/kneader.py"
 
     # Data attributes:
     designRotationalSpeed: NullableRotationalFrequency | None = Field(
@@ -5593,7 +5560,7 @@ class Kneader(Mixer):
 class Lift(StationaryTransportSystem):
     """A StationaryTransportSystem for transporting persons or things from one level to another (from http://data.posccaesar.org/rdl/RDS13601120)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/lift.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/lift.py"
 
     # Data attributes:
     dischargeHead: NullableLength | None = Field(
@@ -5610,7 +5577,7 @@ class Lift(StationaryTransportSystem):
 class LoadingUnloadingSystem(StationaryTransportSystem):
     """A transport system that is intended for loading and/or unloading products into/from vehicles, wagons or vessels (from http://data.posccaesar.org/rdl/RDS11525012)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/loadingUnloadingSystem.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/loadingUnloadingSystem.py"
 
     # Data attributes:
     upperLimitConveyingDistance: NullableLength | None = Field(
@@ -5627,7 +5594,7 @@ class LoadingUnloadingSystem(StationaryTransportSystem):
 class MechanicalSeparator(Separator):
     """A fluid separator in which mechanical separation of fluids take place (from http://data.posccaesar.org/rdl/RDS279134)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/mechanicalSeparator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/mechanicalSeparator.py"
 
     # Data attributes:
     designPower: NullablePower | None = Field(
@@ -5638,7 +5605,7 @@ class MechanicalSeparator(Separator):
 class PressureVessel(Vessel):
     """A vessel intended to withstand external and/or internal pressure (from http://data.posccaesar.org/rdl/RDS427229)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/pressureVessel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pressureVessel.py"
 
     # Data attributes:
     cylinderLength: NullableLength | None = Field(
@@ -5649,7 +5616,7 @@ class PressureVessel(Vessel):
 class ReciprocatingCompressor(Compressor):
     """A positive displacement compressor in which forced reduction of gas volume takes place by the movement of a displacing element in a cylinder or enclosure (from http://data.posccaesar.org/rdl/RDS417284)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/reciprocatingCompressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/reciprocatingCompressor.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -5668,8 +5635,8 @@ class ReciprocatingCompressor(Compressor):
 class ReciprocatingPressureAgglomerator(Agglomerator):
     """An Agglomerator which uses pistons to produce pressure and to form material (from http://data.15926.org/rdl/RDS2228720)."""
 
-    uri: str = (
-        "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/reciprocatingPressureAgglomerator.py"
+    uri: ClassVar[str] = (
+        "https://pyDEXPI.org/schemas/pydexpi_1_3/reciprocatingPressureAgglomerator.py"
     )
 
     # Compositional attributes:
@@ -5689,7 +5656,7 @@ class ReciprocatingPressureAgglomerator(Agglomerator):
 class RevolvingSieve(Sieve):
     """A revolving sieve that intends to sift out finer from coarser parts."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/revolvingSieve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/revolvingSieve.py"
 
     # Data attributes:
     designRotationalFrequency: NullableRotationalFrequency | None = Field(
@@ -5703,7 +5670,7 @@ class RevolvingSieve(Sieve):
 class RotaryCompressor(Compressor):
     """A positive displacement compressor in which compression displacement is effected by the positive action of rotating elements (from http://data.posccaesar.org/rdl/RDS435374)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotaryCompressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotaryCompressor.py"
 
     # Compositional attributes:
     displacers: list[Displacer] = Field(
@@ -5722,7 +5689,7 @@ class RotaryCompressor(Compressor):
 class RotatingGrowthAgglomerator(Agglomerator):
     """An agglomerator which uses a pelletizer disc to produce pellets."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotatingGrowthAgglomerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotatingGrowthAgglomerator.py"
 
     # Compositional attributes:
     pelletizerDisc: PelletizerDisc | None = Field(
@@ -5733,7 +5700,7 @@ class RotatingGrowthAgglomerator(Agglomerator):
 class RotatingPressureAgglomerator(Agglomerator):
     """An agglomerator which uses briquetting rollers to produce pressure and to form material."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/rotatingPressureAgglomerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/rotatingPressureAgglomerator.py"
 
     # Compositional attributes:
     briquettingRollers: list[BriquettingRoller] = Field(
@@ -5752,13 +5719,13 @@ class RotatingPressureAgglomerator(Agglomerator):
 class ScrubbingSeparator(Separator):
     """A separator that is intended to clean gas by washing the gas flow with water or with another liquid entering at the top of the vessel."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/scrubbingSeparator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/scrubbingSeparator.py"
 
 
 class SedimentalCentrifuge(Centrifuge):
     """A centrifuge that is intended to separate solids from liquids by a centrifugal process based on different densities."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sedimentalCentrifuge.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sedimentalCentrifuge.py"
 
     # Compositional attributes:
     sedimentalCentrifugeDrum: SedimentalCentrifugeDrum | None = Field(
@@ -5774,13 +5741,13 @@ class SedimentalCentrifuge(Centrifuge):
 class Silo(Vessel):
     """A Vessel with a conical shape that is intended to store solids in bulk (from http://data.15926.org/rdl/RDS1022399)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/silo.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/silo.py"
 
 
 class SprayCooler(CoolingTower):
     """A CoolingTower that is based on spraying a coolant on a heated surface to be cooled."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/sprayCooler.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/sprayCooler.py"
 
     # Data attributes:
     designSprayFlowRate: NullableVolumeFlowRate | None = Field(
@@ -5791,7 +5758,7 @@ class SprayCooler(CoolingTower):
 class SteamTurbine(Turbine):
     """A turbine that is a heat engine in which energy of steam is transformed into kinetic energy by means of expansion through nozzles and the kinetic energy of the resulting jet is in turn converted into force doing work on rings of blading mounted on a rotating shaft (from http://data.posccaesar.org/rdl/RDS416744)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/steamTurbine.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/steamTurbine.py"
 
     # Data attributes:
     designInletMassFlow: NullableMassFlowRate | None = Field(
@@ -5805,7 +5772,7 @@ class SteamTurbine(Turbine):
 class Tank(Vessel):
     """A vessel intended to contain fluid for storage. Typically a receiving or collecting function for further distribution. Typically with a vertical and cylindrical or square shape and a flat or conical bottom (from http://data.posccaesar.org/rdl/RDS445139)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/tank.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/tank.py"
 
     # Data attributes:
     cylinderLength: NullableLength | None = Field(
@@ -5816,7 +5783,7 @@ class Tank(Vessel):
 class WetCoolingTower(CoolingTower):
     """A CoolingTower that derives its primary cooling effect from the evaporation that takes place when air and water are brought into direct contact."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/wetCoolingTower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/wetCoolingTower.py"
 
     # Compositional attributes:
     coolingTowerRotor: CoolingTowerRotor | None = Field(
@@ -5838,175 +5805,175 @@ class WetCoolingTower(CoolingTower):
 class AngleBallValve(OperatedValve):
     """A valve that has valve ports which are not in-line and that has a ball closure member."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/angleBallValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/angleBallValve.py"
 
 
 class AngleGlobeValve(OperatedValve):
     """A globe valve that deviates from the in-line design, i.e. with a body shape designed to adjust the flow direction with a specified angle relative to the straight through-flow an in-line valve would have provided for (from http://data.posccaesar.org/rdl/RDS882944)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/angleGlobeValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/angleGlobeValve.py"
 
 
 class AnglePlugValve(OperatedValve):
     """A valve that has valve ports which are not in-line and that has a quarter turn action in which the closure member is a cylindrical or tapered plug which operates by rotating on its axis and sealing against a downstream seat."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/anglePlugValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/anglePlugValve.py"
 
 
 class AngleValve(OperatedValve):
     """A valve that has valve ports which are not in-line (from http://data.posccaesar.org/rdl/RDS5789384)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/angleValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/angleValve.py"
 
 
 class BallValve(OperatedValve):
     """A rotary valve that has a ball closure member (from http://data.posccaesar.org/rdl/RDS416654)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/ballValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/ballValve.py"
 
 
 class BlindFlange(PipeFitting):
     """A pipe flange that is without a central opening and used to shut off a flanged pipe end (from http://data.posccaesar.org/rdl/RDS414719)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/blindFlange.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/blindFlange.py"
 
 
 class ButterflyValve(OperatedValve):
     """A rotary valve that has a closure member of a disc type with a shaft parallel, or near parallel, to the plane of the disc, with an axis of rotation transverse to the flow direction (from http://data.posccaesar.org/rdl/RDS416609)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/butterflyValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/butterflyValve.py"
 
 
 class ClampedFlangeCoupling(PipeFitting):
     """A clamped flange coupling."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/clampedFlangeCoupling.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/clampedFlangeCoupling.py"
 
 
 class Compensator(PipeFitting):
     """A device compensating for axial or radial movement between two elements that is connected (from http://data.posccaesar.org/rdl/RDS1280084541)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/compensator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/compensator.py"
 
 
 class ConicalStrainer(PipeFitting):
     """A strainer where the screen has a conical tubular shape (from http://data.posccaesar.org/rdl/RDS16044540)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/conicalStrainer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/conicalStrainer.py"
 
 
 class CustomInlinePrimaryElement(CustomObject, InlinePrimaryElement):
     """A custom InlinePrimaryElement, i.e., an InlinePrimaryElement that is not covered by any of the other subclasses of InlinePrimaryElement."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customInlinePrimaryElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customInlinePrimaryElement.py"
 
 
 class CustomOperatedValve(CustomObject, OperatedValve):
     """A custom OperatedValve, i.e., an OperatedValve that is not covered by any of the other subclasses of OperatedValve."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customOperatedValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customOperatedValve.py"
 
 
 class CustomPipeFitting(CustomObject, PipeFitting):
     """A custom PipeFitting, i.e., a PipeFitting that is not covered by any of the other subclasses of PipeFitting."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/customPipeFitting.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customPipeFitting.py"
 
 
 class ElectromagneticFlowMeter(InlinePrimaryElement):
     """A velocity flow meter that is measuring flow rate of a conductive fluid running through a magnetic field by measuring the charge created when fluid interacting with the field (from http://data.posccaesar.org/rdl/RDS1009664)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/electromagneticFlowMeter.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/electromagneticFlowMeter.py"
 
 
 class Flange(PipeFitting):
     """A physical object that is a projecting flat rim, plate,collar, or rib (from http://data.posccaesar.org/rdl/RDS13307654)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flange.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flange.py"
 
 
 class FlangedConnection(PipeFitting):
     """A flanged connection."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flangedConnection.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flangedConnection.py"
 
 
 class FlowMeasuringElement(InlinePrimaryElement):
     """A FLOW MEASURING ELEMENT is a MEASURING ELEMENT that is used to measure FLOW RATE."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flowMeasuringElement.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowMeasuringElement.py"
 
 
 class FlowNozzle(InlinePrimaryElement):
     """A nozzle with a smooth entry and a sharp exit (from http://data.posccaesar.org/rdl/RDS821024)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/flowNozzle.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/flowNozzle.py"
 
 
 class Funnel(PipeFitting):
     """A hollow cone with a tube extending from the smaller end and that is designed to catch and direct a downward flow (from http://data.posccaesar.org/rdl/RDS6689917)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/funnel.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/funnel.py"
 
 
 class GateValve(OperatedValve):
     """A valve that is a valve where the closure member is a gate or disc with a linear motion parallel, or nearly parallel, to the plane of flat seats, which are transverse to the direction of flow (from http://data.posccaesar.org/rdl/RDS416519)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/gateValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/gateValve.py"
 
 
 class GlobeValve(OperatedValve):
     """A valve that is a valve where the closure member is a disc or piston operating with linear motion normal to the flat or shaped seat (from http://data.posccaesar.org/rdl/RDS416204)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/globeValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/globeValve.py"
 
 
 class Hose(PipeFitting):
     """A tubular which is flexible and capable of conveying liquids under pressure (from http://data.posccaesar.org/rdl/RDS302174)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/hose.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/hose.py"
 
 
 class IlluminatedSightGlass(PipeFitting):
     """An illuminated sight glass."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/illuminatedSightGlass.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/illuminatedSightGlass.py"
 
 
 class InLineMixer(PipeFitting):
     """A static mixer that is intended to be supported by connected equipment. Typically supported by piping (from http://data.posccaesar.org/rdl/RDS43167562195)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/inLineMixer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/inLineMixer.py"
 
 
 class LineBlind(PipeFitting):
     """A functional unit used to blind off a process stream (from http://data.posccaesar.org/rdl/RDS280034)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/lineBlind.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/lineBlind.py"
 
 
 class NeedleValve(OperatedValve):
     """A globe valve that has a closure member with the shape of a conical plug (needle) which closes into a small seat (from http://data.posccaesar.org/rdl/RDS421064)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/needleValve.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/needleValve.py"
 
 
 class Penetration(PipeFitting):
     """A device intended to provide a penetration (from http://data.posccaesar.org/rdl/RDS13068275)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/penetration.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/penetration.py"
 
 
 class PipeCoupling(PipeFitting):
     """An ‘artefact’ that is a one-piece cylindrical section intended to join pipes and/or piping components (from http://data.posccaesar.org/rdl/RDS415664)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/piping/pipeCoupling.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/pipeCoupling.py"
 
 
 class AirEjector(Compressor):
     """An ejector intended to create vacuum using compressed air (from http://data.posccaesar.org/rdl/RDS5770157)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/airEjector.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/airEjector.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -6022,7 +5989,7 @@ class AirEjector(Compressor):
 class AlternatingCurrentGenerator(ElectricGenerator):
     """An electric generator for the production of alternating current and voltage (from http://data.posccaesar.org/rdl/RDS873359)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/alternatingCurrentGenerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/alternatingCurrentGenerator.py"
 
     # Data attributes:
     alternatingCurrentFrequency: NullableElectricalFrequency | None = Field(
@@ -6033,7 +6000,7 @@ class AlternatingCurrentGenerator(ElectricGenerator):
 class AxialBlower(Blower):
     """A blower in which the flow direction is parallel to the shaft (from http://data.posccaesar.org/rdl/RDS433259)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/axialBlower.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/axialBlower.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -6044,7 +6011,7 @@ class AxialBlower(Blower):
 class AxialCompressor(Compressor):
     """A Compressor in which the gas is accelerated by the action of a bladed rotor and where the main flow is along the rotation axis of the rotor."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/axialCompressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/axialCompressor.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -6063,7 +6030,7 @@ class AxialCompressor(Compressor):
 class CentrifugalCompressor(Compressor):
     """A dynamic compressor in which one ore more impellers accelerate the gas and where the main flow through the impeller is radial (from http://data.posccaesar.org/rdl/RDS417194)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/centrifugalCompressor.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/centrifugalCompressor.py"
 
     # Compositional attributes:
     impellers: list[Impeller] = Field(
@@ -6082,7 +6049,7 @@ class CentrifugalCompressor(Compressor):
 class ConvectionDryer(Dryer):
     """A Dryer that dries a material by bringing it in contact with a drying gas."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/convectionDryer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/convectionDryer.py"
 
     # Data attributes:
     airConsumption: NullableVolumeFlowRate | None = Field(
@@ -6093,7 +6060,7 @@ class ConvectionDryer(Dryer):
 class CustomDryer(CustomObject, Dryer):
     """A custom Dryer, i.e., a Dryer that is not covered by any of the other subclasses of Dryer (ConvectionDryer or HeatedSurfaceDryer)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customDryer.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customDryer.py"
 
     # Data attributes:
     airConsumption: NullableVolumeFlowRate | None = Field(
@@ -6107,7 +6074,7 @@ class CustomDryer(CustomObject, Dryer):
 class CustomElectricGenerator(CustomObject, ElectricGenerator):
     """A custom ElectricGenerator, i.e., an ElectricGenerator that is not covered by any of the other subclasses of ElectricGenerator (AlternatingCurrentGenerator or DirectCurrentGenerator)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/customElectricGenerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/customElectricGenerator.py"
 
     # Data attributes:
     alternatingCurrentFrequency: NullableElectricalFrequency | None = Field(
@@ -6118,4 +6085,4 @@ class CustomElectricGenerator(CustomObject, ElectricGenerator):
 class DirectCurrentGenerator(ElectricGenerator):
     """An ElectricGenerator and current generator for the production of direct current (DC)."""
 
-    uri: str = "https://pyDEXPI.org/schemas/pydexpi_1_3/equipment/directCurrentGenerator.py"
+    uri: ClassVar[str] = "https://pyDEXPI.org/schemas/pydexpi_1_3/directCurrentGenerator.py"

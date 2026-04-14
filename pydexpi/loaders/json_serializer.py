@@ -10,16 +10,24 @@ import json
 from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 import pydexpi.toolkits.base_model_utils as bmt
 from pydexpi.dexpi_classes.pydantic_classes import DexpiBaseModel, DexpiDataTypeBaseModel
 from pydexpi.loaders.serializer import Serializer
 from pydexpi.toolkits.base_model_utils import (
+    attribute_is_required,
     get_composition_attributes,
     get_data_attributes,
     get_reference_attributes,
+    get_reference_attributes_from_class,
 )
+
+
+class IncompletePassError(Exception):
+    """Custom exception for incomplete parsing passes in the DictToDexpiDecoder."""
+
+    pass
 
 
 class JsonSerializer(Serializer):
@@ -37,7 +45,9 @@ class JsonSerializer(Serializer):
         self.encoder = DexpiToDictEncoder()
         self.decoder = DictToDexpiDecoder()
 
-    def save(self, model: DexpiBaseModel, dir_path: str | Path, filename: str) -> None:
+    def save(
+        self, model: DexpiBaseModel, dir_path: str | Path, filename: str, indent: int = 4
+    ) -> None:
         """
         Save a DEXPI model to a JSON file.
 
@@ -49,6 +59,8 @@ class JsonSerializer(Serializer):
             Directory path where the file will be saved
         filename : str
             Name of the file without extension
+        indent : int, optional
+            Number of spaces for indentation in the JSON file, by default 4
 
         Returns
         -------
@@ -60,7 +72,7 @@ class JsonSerializer(Serializer):
 
         path = Path(dir_path) / filename
         with open(path, "w", encoding="utf-8") as file:
-            json.dump(self.model_to_dict(model), file, indent=4, ensure_ascii=False)
+            json.dump(self.model_to_dict(model), file, indent=indent, ensure_ascii=False)
 
     def load(self, dir_path: str | Path, filename: str) -> DexpiBaseModel:
         """
@@ -93,6 +105,97 @@ class JsonSerializer(Serializer):
 
         with open(path, encoding="utf-8") as file:
             data = json.load(file)
+        return self.dict_to_model(data, external_refs={})
+
+    def export_to_bytes(self, model: DexpiBaseModel, indent: int = 4) -> bytes:
+        """
+        Export a DEXPI model to JSON bytes.
+
+        Parameters
+        ----------
+        model : DexpiBaseModel
+            The DEXPI model to export
+        indent : int, optional
+            Number of spaces for indentation in the JSON, by default 4
+
+        Returns
+        -------
+        bytes
+            The exported JSON as bytes
+        """
+        json_string = json.dumps(self.model_to_dict(model), indent=indent, ensure_ascii=False)
+        return json_string.encode("utf-8")
+
+    def export_to_stream(self, model: DexpiBaseModel, stream: IO[bytes], indent: int = 4) -> None:
+        """
+        Export a DEXPI model to a JSON byte stream.
+
+        Parameters
+        ----------
+        model : DexpiBaseModel
+            The DEXPI model to export
+        stream : IO[bytes]
+            The output stream to write the JSON to
+        indent : int, optional
+            Number of spaces for indentation in the JSON, by default 4
+
+        Returns
+        -------
+        None
+        """
+        json_bytes = self.export_to_bytes(model, indent=indent)
+        stream.write(json_bytes)
+
+    def load_from_bytes(self, json_bytes: bytes) -> DexpiBaseModel:
+        """
+        Load a DEXPI model from JSON bytes.
+
+        Parameters
+        ----------
+        json_bytes : bytes
+            The JSON content as bytes to load
+
+        Returns
+        -------
+        DexpiBaseModel
+            The loaded DEXPI model
+        """
+        json_string = json_bytes.decode("utf-8")
+        data = json.loads(json_string)
+        return self.dict_to_model(data, external_refs={})
+
+    def load_from_stream(self, stream: IO[bytes]) -> DexpiBaseModel:
+        """
+        Load a DEXPI model from a JSON byte stream.
+
+        Parameters
+        ----------
+        stream : IO[bytes]
+            A readable binary stream containing JSON content
+
+        Returns
+        -------
+        DexpiBaseModel
+            The loaded DEXPI model
+        """
+        json_bytes = stream.read()
+        return self.load_from_bytes(json_bytes)
+
+    def load_from_string(self, json_string: str) -> DexpiBaseModel:
+        """
+        Load a DEXPI model from a JSON string.
+
+        Parameters
+        ----------
+        json_string : str
+            The JSON content as a string to load
+
+        Returns
+        -------
+        DexpiBaseModel
+            The loaded DEXPI model
+        """
+        data = json.loads(json_string)
         return self.dict_to_model(data, external_refs={})
 
     def model_to_dict(self, model: DexpiBaseModel) -> dict:
@@ -275,14 +378,27 @@ class DictToDexpiDecoder:
         # Reset and set the object registry
         self.object_registry = external_refs if external_refs else {}
 
-        # Create the object with compositional and data attributes
-        the_object = self._compositional_pass(data)
+        all_objects_parsed_flag = False
+        while not all_objects_parsed_flag:
+            # Set the flag to true at the start of the loop. If any object couldn't be parsed due
+            # to missing dependencies, it will be set to false again and a new pass will be made.
+            curr_obj_len = len(self.object_registry)
+            try:
+                the_object = self._compositional_pass(data)
+                all_objects_parsed_flag = True
+            except IncompletePassError:
+                next_obj_len = len(self.object_registry)
+                if next_obj_len == curr_obj_len:
+                    raise RuntimeError(
+                        "Stalled parsing process: No new objects were created in the last pass."
+                    )
 
-        # Resolve references in the object
+        # Call reference pass
         self._reference_pass(data)
+
         return the_object
 
-    def _compositional_pass(self, data: dict) -> DexpiBaseModel:
+    def _compositional_pass(self, data: dict) -> DexpiBaseModel | None:
         """Recursively convert dictionaries to nested DEXPI model elements.
 
         This method handles the creation of DEXPI model objects including
@@ -298,7 +414,12 @@ class DictToDexpiDecoder:
         DexpiBaseModel
             The constructed DEXPI model without resolved references
         """
+        # If the object has been created successfully already, return it from the registry
+        object_id = data.get("id")
+        if object_id and object_id in self.object_registry:
+            return self.object_registry[object_id]
 
+        ### COMPOSITIONAL PASS ###
         # Retrieve the model class from the Dexpi classes
         model_uri = data.get("uri")
         model_class = bmt.get_dexpi_class_from_uri(model_uri)
@@ -307,9 +428,26 @@ class DictToDexpiDecoder:
 
         # Prepare the composition attributes for the model
         comp_attr_args = {}
+        incomplete_pass_occurred = False
         for attr, attr_val in raw_comp_attrs.items():
-            comp_attr_args[attr] = _call_on_list_or_object_or_none(
-                self._compositional_pass, attr_val
+            if attr_val is None:
+                comp_attr_args[attr] = None
+            elif isinstance(attr_val, list):
+                comp_attr_args[attr] = []
+                for item in attr_val:
+                    try:
+                        comp_attr_args[attr].append(self._compositional_pass(item))
+                    except IncompletePassError:
+                        incomplete_pass_occurred = True
+            else:
+                try:
+                    comp_attr_args[attr] = self._compositional_pass(attr_val)
+                except IncompletePassError:
+                    incomplete_pass_occurred = True
+
+        if incomplete_pass_occurred:
+            raise IncompletePassError(
+                "Incomplete pass due to unresolved compositional dependencies."
             )
 
         # Prepare the data attributes for the model
@@ -328,6 +466,33 @@ class DictToDexpiDecoder:
         model_args = {"id": model_id} if model_id else {}
         model_args.update(comp_attr_args)
         model_args.update(data_attr_args)
+
+        ### REQUIRED REFERENCE PASS ###
+        # Retrieve the model class from the Dexpi classes
+        raw_reference_attrs = data.get("reference", {})
+
+        reference_fields = get_reference_attributes_from_class(model_class)
+        required_reference_fields = {
+            field for field in reference_fields if bmt.attribute_is_required(model_class, field)
+        }
+
+        for attr, attr_val in raw_reference_attrs.items():
+            # Skip non-required references, as they will be handled in the reference pass
+            if attr not in required_reference_fields:
+                continue
+
+            try:
+                resolved_refs = _call_on_list_or_object_or_none(
+                    self.object_registry.__getitem__, attr_val
+                )
+                model_args[attr] = resolved_refs
+            except KeyError:
+                # If a referenced object is not found, it means it hasn't been created yet.
+                # Set the flag to false to indicate that another pass is needed.
+                self.all_objects_parsed_flag = False
+                raise IncompletePassError(
+                    f"Referenced object with ID {attr_val} not found in registry."
+                )
 
         # Create an instance of the model class with the arguments
         new_object = model_class(**model_args)
@@ -363,7 +528,7 @@ class DictToDexpiDecoder:
 
     def _reference_pass(self, data: dict) -> None:
         """
-        Resolve references in the data dictionary.
+        Resolve remaining, optional references in the data dictionary.
 
         This method resolves object references using the object registry
         after all objects have been created in the compositional pass.
@@ -386,6 +551,9 @@ class DictToDexpiDecoder:
         raw_reference_attrs = data.get("reference", {})
 
         for attr, attr_val in raw_reference_attrs.items():
+            # Skip required references, as they were handled in the compositional pass
+            if attribute_is_required(the_object.__class__, attr):
+                continue
             resolved_refs = _call_on_list_or_object_or_none(
                 self.object_registry.__getitem__, attr_val
             )

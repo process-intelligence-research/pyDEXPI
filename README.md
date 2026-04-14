@@ -1,8 +1,6 @@
 <!-- omit from toc -->
 # pyDEXPI by [<img src="https://raw.githubusercontent.com/process-intelligence-research/pyDEXPI/master/docs/logos/Process_Intelligence_Black_Horizontal.png" alt="Process Intelligence Research logo" height="40" style="background-color: white; padding: 10px;">](https://www.pi-research.org/)
 
-
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/process-intelligence-research/pyDEXPI/refs/heads/master/docs/logos/pydexpi_logo.png" alt="pyDEXPI logo" width="700" style="background-color: white; padding: 10px;">  
 </p>
@@ -17,22 +15,23 @@ pyDEXPI implements a parser to a **graph representation** of Piping and Instrume
 
 Supports DEXPI version 1.3.
 
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/process-intelligence-research/pyDEXPI/master/docs/pyDEXPI_graphical_overview.png" alt="pyDEXPI graphical overview" width="700">  
 </p>
 
-
 ### Features
+
 - **DEXPI data model** as [Pydantic](https://docs.pydantic.dev/) classes in Python.
 - **Load Proteus .xml** files to a pyDEXPI instance.
 - **pyDEXPI toolkit** to analyze and manipulate pyDEXPI models.
 - **Parse pyDEXPI instance to graph** in [NetworkX](https://networkx.org/).
+- **Export DEXPI diagrams to SVG** for visualisation.
 - **Synthetic DEXPI P&ID generation** for generative Artificial Intelligence (AI).
 
-
 ### Citation
+
 Please reference this software package as:
+
 ```
 @InProceedings{pyDEXPI,
   author    = {Goldstein, Dominik P. and Schulze Balhorn, Lukas and Alimin, Achmad Anggawirya and Schweidtmann, Artur M.},
@@ -57,20 +56,23 @@ Please reference this software package as:
   - [Proteus import](#proteus-import)
   - [Serialization](#serialization)
   - [Graph export](#graph-export)
+  - [SVG export](#svg-export)
   - [Synthetic P\&ID generation](#synthetic-pid-generation)
 - [Relevant applications and references](#relevant-applications-and-references)
 - [Contributors](#contributors)
 - [Copyright and license](#copyright-and-license)
 - [Contact](#contact)
 
-
 ## Installation
 
-Install the pyDEXPI package via 
+Install the pyDEXPI package via
+
 ```bash
 pip install pydexpi
 ```
+
 or from GitHub via:
+
 ```bash
 pip install git+https://github.com/process-intelligence-research/pyDEXPI
 ```
@@ -85,18 +87,18 @@ pip install .
 
 ## Using pyDEXPI
 
-The following section serves as a first guide to start using the package, illustrated with the [DEXPI reference P&ID](https://gitlab.com/dexpi/TrainingTestCases/-/tree/master/dexpi%201.3/example%20pids/C01%20DEXPI%20Reference%20P&ID?ref_type=heads) (`data/C01V04-VER.EX01.xml` &copy; DEXPI e.V.). We recommend to study the [DEXPI data model](https://dexpi.plants-and-bytes.de/) before working with the tool. 
-For more details, see the [extended documentation](https://pydexpi.readthedocs.io/en/latest/).
+The following section serves as a first guide to start using the package, illustrated with the [DEXPI reference P&ID](https://gitlab.com/dexpi/TrainingTestCases/-/tree/master/dexpi%201.3/example%20pids/C01%20DEXPI%20Reference%20P&ID?ref_type=heads) (`data/C01V04-VER.EX01.xml` &copy; DEXPI e.V.). We recommend to study the [DEXPI data model](https://dexpi.plants-and-bytes.de/) before working with the tool.
 
 ### pyDEXPI Python model
 
 The [pyDEXPI Python model](pydexpi/dexpi_classes/) is derived from the [DEXPI data model](https://dexpi.plants-and-bytes.de/) and implemented using [Pydantic](https://docs.pydantic.dev/). By using Pydantic the rules of the data model are automatically enforced, for instance, a pump cannot be added as a nozzle to a tank. Each DEXPI instance gets assigned an ID in the form of an uuid, if not specified differently by the user.
 
 The following DEXPI data types are replaced with default Python classes:
--  "String", "NullableString", "AnyURI", "NullableAnyURI" -> "str"
--  "Integer", "NullableInteger", "UnsignedByte" -> "int"
--  "Double" -> "float"
--  "DateTime", "NullableDateTime" -> "datetime"
+
+- "String", "NullableString", "AnyURI", "NullableAnyURI" -> "str"
+- "Integer", "NullableInteger", "UnsignedByte" -> "int"
+- "Double" -> "float"
+- "DateTime", "NullableDateTime" -> "datetime"
 
 ### Proteus import
 
@@ -134,32 +136,69 @@ my_serializer = PickleSerializer()
 Then:
 
 ```python
-my_serializer.save(dummy_dexpi_model, "dummy_path", "dummy_filename")
-dummy_dexpi_model = my_serializer.load("dummy_path", "dummy_filename")
+my_serializer.save(dexpi_model, "dummy_path", "dummy_filename")
+dexpi_model = my_serializer.load("dummy_path", "dummy_filename")
 ```
 
 ### Graph export
 
-The [graph loader](pydexpi/loaders/graph_loader.py) exports a DEXPI model to a [NetworkX](https://networkx.org/) graph. This is implemented as an abstract class to accommodate customized graph formats. The package includes an implementation for direct application [MLGraphLoader](pydexpi/loaders/ml_graph_loader.py). Here, we represent DEXPI components such as tagged plant equipment, process instrumentation functions, and piping components as nodes. The connectivity between the nodes represent piping connections or signal connections as directed edges. Data attributes of the pyDEXPI classes are added as node/edge attributes of the respective, representing node/edge. More details of the graph format are described [here](docs/DEXPI2graph.pdf).
+The [graph loader](pydexpi/loaders/graph_loader.py) provides two classes for working with NetworkX graphs:
+
+- **`GraphLoader`** — converts a DEXPI model into a [NetworkX](https://networkx.org/) `MultiDiGraph`. Every `DexpiBaseModel` instance becomes a node (with data attributes embedded), and structural (`composition`) or cross-reference (`reference`) relationships become labelled directed edges.
+- **`GraphAbstractor`** — simplifies a raw plant graph by collapsing or removing nodes. Three ready-made static methods cover common use cases: `build_complete_graph` (removes only structural/metadata nodes), `build_process_graph` (collapses piping internals into equipment/segment nodes), and `build_conceptual_graph` (further abstracts instrumentation and piping into a compact process topology).
 
 ```python
-from pydexpi.loaders.ml_graph_loader import MLGraphLoader
-from pydexpi.loaders import ProteusSerializer
+from pydexpi.loaders import GraphLoader, GraphAbstractor, ProteusSerializer
 
 directory_path = "data"
 filename = "C01V04-VER.EX01.xml"
-# load proteus
+
+# Load DEXPI model
 my_loader = ProteusSerializer()
 dexpi_model = my_loader.load(directory_path, filename)
-# export to graph
-my_graph_loader = MLGraphLoader(plant_model=dexpi_model)
-my_graph_loader.parse_dexpi_to_graph()
-my_graph_loader.draw_process_matplotlib()
+
+# Export full plant graph — every DEXPI instance as a node
+my_graph_loader = GraphLoader()
+plant_graph = my_graph_loader.parse_dexpi_to_graph(dexpi_model)
+
+# Simplify to a process-level topology
+process_graph = GraphAbstractor.build_process_graph(plant_graph)
+
+# Or build a compact conceptual graph (equipment + instrumentation nodes, piping as edges)
+conceptual_graph = GraphAbstractor.build_conceptual_graph(plant_graph)
+```
+
+### SVG export
+
+The [SVG loader](pydexpi/loaders/svg_loader.py) renders DEXPI graphical data to SVG format. The core engine is `SvgRenderer`, which converts DEXPI primitives (polylines, polygons, ellipses, arcs, text) to SVG elements and manages coordinate conversion (DEXPI uses a mathematical Y-up system; SVG uses Y-down). On top of this, a set of concrete `DrawSVG` subclasses handle different scopes:
+
+- **`DrawDiagram`** — renders an entire P&ID diagram to a single SVG, with an optional `pretty` mode that scales output to A3 and applies thinner line widths.
+- **`DrawRepresentationGroup`** — renders a single DEXPI component (e.g. a pump, heat exchanger). Setting `show_node_position=True` overlays crosshair markers at each nozzle/connection point.
+- **`DrawShape`** / **`DrawShapeUsage`** — renders individual symbol shapes including position, rotation, scale and mirroring.
+
+| Full P&ID | Component with node positions |
+|:---------:|:------------------------------:|
+| ![Full P&ID SVG](docs/svg_export/svg_full_pid.svg) | ![Node positions](docs/svg_export/svg_node_positions.svg) |
+
+```python
+from pydexpi.loaders import ProteusSerializer
+from pydexpi.loaders.svg_loader import DrawDiagram, DrawRepresentationGroup
+
+dexpi_model = ProteusSerializer().load("data", "C01V04-VER.EX01.xml")
+
+# Render the full P&ID to SVG
+drawer = DrawDiagram(dexpi_model.diagram, padding=5.0, pretty=True)
+drawer.save_svg("my_pid", "output/my_pid.svg")
+
+# Render a single component with node position markers
+component_group = dexpi_model.diagram.groups[2]  # e.g. a pump
+drawer = DrawRepresentationGroup(component_group, padding=10.0, show_node_position=True)
+drawer.save_svg("pump", "output/pump.svg")
 ```
 
 ### Synthetic P&ID generation
 
-The [synthetic data generation](pydexpi/syndata/) generation contains code for the creation of synthetic P&IDs. This method is based on the aggregation of P&ID module templates (or patterns) as described in the publication [Toward automatic generation of control structures for process flow diagrams with large language models](https://doi.org/10.1002/aic.18259). An abstraction of the generation logic allows to customize the procedure underlying the module aggregation. For this, the abstract [GeneratorFunction](pydexpi/syndata/generator_function.py) can be implemented as required. An example implementation [RandomGeneratorFunction](pydexpi/syndata/generator_function.py) is provided. This implementation selects P&ID modules at random. P&ID modules can be used in any data representation. For this, suitable abstractions of the [Pattern Class](pydexpi/syndata/pattern.py) and the [Connector Class](pydexpi/syndata/pattern.py) need to be implemented. A pattern wraps a P&ID data structure for the generation algorithm. A connector acts as a connection interface of a P&ID module. Sample implementations of patterns and connectors are provided for [pyDEXPI instances](pydexpi/syndata/dexpi_pattern.py)  and [NetworkX graphs](pydexpi/syndata/graph_pattern.py). A UML diagram of the implementation is given [here](docs/GeneratorUML.pdf). 
+The [synthetic data generation](pydexpi/syndata/) generation contains code for the creation of synthetic P&IDs. This method is based on the aggregation of P&ID module templates (or patterns) as described in the publication [Toward automatic generation of control structures for process flow diagrams with large language models](https://doi.org/10.1002/aic.18259). An abstraction of the generation logic allows to customize the procedure underlying the module aggregation. For this, the abstract [GeneratorFunction](pydexpi/syndata/generator_function.py) can be implemented as required. An example implementation [RandomGeneratorFunction](pydexpi/syndata/generator_function.py) is provided. This implementation selects P&ID modules at random. P&ID modules can be used in any data representation. For this, suitable abstractions of the [Pattern Class](pydexpi/syndata/pattern.py) and the [Connector Class](pydexpi/syndata/pattern.py) need to be implemented. A pattern wraps a P&ID data structure for the generation algorithm. A connector acts as a connection interface of a P&ID module. Sample implementations of patterns and connectors are provided for [pyDEXPI instances](pydexpi/syndata/dexpi_pattern.py). A UML diagram of the implementation is given [here](docs/GeneratorUML.pdf).
 
 The code below demonstrates the synthetic data generation algorithm with the RandomGeneratorFunction and the pyDEXPI/Graph patterns.
 
@@ -170,7 +209,6 @@ from pydexpi.syndata.generator_function import RandomGeneratorFunction
 
 # Load distributions
 the_path = "./data/dexpi_sample_patterns"
-# the_path = "./data/graph_sample_patterns" # Alternatively for graph patterns
 pattern_distr_names = [name for name in os.listdir(the_path) if os.path.isdir(os.path.join(the_path, name))]
 distributions = [PatternDistribution.load(the_path, name) for name in pattern_distr_names]
 distribution_dict = {distribution.name: distribution for distribution in distributions}
@@ -183,26 +221,30 @@ syn_pattern = the_generator.generate_pattern("New pattern label")
 ## Relevant applications and references
 
 **Vision of GenAI for process engineering**
+
 - Schweidtmann, A. M. (2024). Generative artificial intelligence in chemical engineering. Nature Chemical Engineering, 1(3), 193-193. [https://doi.org/10.1038/s44286-024-00041-5](https://doi.org/10.1038/s44286-024-00041-5)
 
 **Chat interface for P&IDs using Large Language Models (LLMs)**
+
+- Alimin, A. A., & Schweidtmann, A. M. (2026). GraphRAG for Engineering Diagrams: ChatP&ID Enables LLM Interaction with P&IDs. arXiv preprint arXiv:2603.22528. [https://doi.org/10.48550/arXiv.2603.22528]
 - Alimin, A. A., Goldstein, D. P., Balhorn, L. S., & Schweidtmann, A. M. (2025). Talking like piping and instrumentation diagrams (p&ids). Proceedings of the 35th European Symposium on Computer Aided Process Engineering (ESCAPE35), Ghent, Belgium. [https://doi.org/10.69997/sct.159477](https://doi.org/10.69997/sct.159477)
 
 **Error correction of P&IDs**
+
 - Balhorn, L. S., Seijsener, N., Dao, K., Kim, M., Goldstein, D. P., Driessen, G. H., & Schweidtmann, A. M. (2025). Rule-based autocorrection of Piping and Instrumentation Diagrams (P&IDs) on graphs. Proceedings of the 35th European Symposium on Computer Aided Process Engineering (ESCAPE35), Ghent, Belgium. [https://doi.org/10.69997/sct.150968](https://doi.org/10.69997/sct.150968)
 - Balhorn, L. S., Caballero, M., & Schweidtmann, A. M. (2024). Toward autocorrection of chemical process flowsheets using large language models. In Computer Aided Chemical Engineering (Vol. 53, pp. 3109-3114). Elsevier. [https://doi.org/10.1016/B978-0-443-28824-1.50519-6](https://doi.org/10.1016/B978-0-443-28824-1.50519-6)
 
-
 **Process development**
+
 - Vogel, G., Balhorn, L. S., & Schweidtmann, A. M. (2023). Learning from flowsheets: A generative transformer model for autocompletion of flowsheets. Computers & Chemical Engineering, 171, 108162. [https://doi.org/10.1016/j.compchemeng.2023.108162](https://doi.org/10.1016/j.compchemeng.2023.108162)
 - Balhorn, L. S., Hirtreiter, E., Luderer, L., & Schweidtmann, A. M. (2023). Data augmentation for machine learning of chemical process flowsheets. In Computer Aided Chemical Engineering (Vol. 52, pp. 2011-2016). Elsevier. [https://doi.org/10.1016/B978-0-443-15274-0.50320-6](https://doi.org/10.1016/B978-0-443-15274-0.50320-6)
 - Hirtreiter, E., Schulze Balhorn, L., & Schweidtmann, A. M. (2024). Toward automatic generation of control structures for process flow diagrams with large language models. AIChE Journal, 70(1), e18259. [https://doi.org/10.1002/aic.18259](https://doi.org/10.1002/aic.18259)
 - Balhorn, L. S., Degens, K., & Schweidtmann, A. M. (2025). Graph-to-SFILES: Control structure prediction from process topologies using generative artificial intelligence. Computers & Chemical Engineering, 109121. [https://doi.org/10.1016/j.compchemeng.2025.109121](https://doi.org/10.1016/j.compchemeng.2025.109121)
 
 **Digitization of paper P&IDs to smartP&IDs**
+
 - Theisen, M. F., Flores, K. N., Balhorn, L. S., & Schweidtmann, A. M. (2023). Digitization of chemical process flow diagrams using deep convolutional neural networks. Digital chemical engineering, 6, 100072. [https://doi.org/10.1016/j.dche.2022.100072](https://doi.org/10.1016/j.dche.2022.100072)
 - [Digitization Companion](https://www.digitization-companion.com/)
-
 
 ## Contributors
 
@@ -220,6 +262,7 @@ This software is released under the [OSI-approved](https://opensource.org/licens
 **Commercial or Proprietary Use?**
 
 If you would like to:
+
 - Use this software in a proprietary or closed-source product,
 - Use it in a way that is not compatible with AGPL copyleft obligations, or
 - Obtain dedicated support or feature extensions,
@@ -227,7 +270,7 @@ If you would like to:
 We’re happy to discuss a commercial or custom license on a case-by-case basis.  
 Please reach out to [a.schweidtmann@tudelft.nl](a.schweidtmann@tudelft.nl) for more information.
 
-Copyright (C) 2025 Artur Schweidtmann. 
+Copyright (C) 2025 Artur Schweidtmann.
 
 ## Contact
 

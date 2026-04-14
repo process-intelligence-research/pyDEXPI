@@ -12,6 +12,7 @@ from collections.abc import Callable
 from enum import Enum
 
 from pydexpi.dexpi_classes import dexpiModel, piping
+from pydexpi.toolkits.base_model_utils import get_data_attributes
 
 
 class DexpiConnectionException(Exception):
@@ -1463,6 +1464,40 @@ def piping_network_segment_validity_check(
 
     # If no violation was encountered above, the segment is valid
     return (PipingValidityCode.VALID, "Segment valid")
+
+
+def add_system_attributes_to_segment(
+    the_system: piping.PipingNetworkSystem,
+) -> piping.PipingNetworkSystem:
+    """
+    Adds the attributes of the piping network system to the segment if they are not
+    already set.
+
+    Parameters
+    ----------
+    the_system : PipingNetworkSystem
+        The piping network system whose segments are to be updated.
+
+    Returns
+    -------
+    PipingNetworkSystem
+        The updated piping network system.
+    """
+    # Get all data attributes from the system
+    system_attrs = get_data_attributes(the_system)
+    # Get attribute names from the first segment (all segments have same attributes)
+    if not the_system.segments:
+        return the_system
+    segment_attr_names = get_data_attributes(the_system.segments[0]).keys()
+    # Only consider attributes present in both
+    common_attr_names = set(system_attrs.keys()) & set(segment_attr_names)
+    for segment in the_system.segments:
+        for attr_name in common_attr_names:
+            seg_value = getattr(segment, attr_name)
+            sys_value = system_attrs[attr_name]
+            if seg_value is None and sys_value is not None:
+                setattr(segment, attr_name, sys_value)
+    return the_system
 
 
 def _connect_piping_connection(

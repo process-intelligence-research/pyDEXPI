@@ -717,3 +717,45 @@ def test_piping_network_segment_validity_check(simple_pns_factory):
 
     # Final valid case
     assert check_pns(simple_pns_factory())[0] == pt.PipingValidityCode.VALID
+
+
+def test_add_system_attributes_to_segment_sets_missing_values():
+    # System has attributes, segments have same attributes set to None
+    attrs = {"fluidCode": "W", "insulationType": "test", "pipingClassCode": "123"}
+    system = piping.PipingNetworkSystem(
+        **attrs, segments=[piping.PipingNetworkSegment() for _ in range(2)]
+    )
+    # Segments start with None
+    for segment in system.segments:
+        for k in attrs:
+            assert getattr(segment, k) is None
+    # Call function
+    pt.add_system_attributes_to_segment(system)
+    # After call, segments should have system values
+    for segment in system.segments:
+        for k, v in attrs.items():
+            assert getattr(segment, k) == v
+
+
+def test_add_system_attributes_to_segment_does_not_override_existing():
+    attrs = {"fluidCode": "W", "insulationType": "test"}
+    system = piping.PipingNetworkSystem(
+        **attrs, segments=[piping.PipingNetworkSegment() for _ in range(2)]
+    )
+    # Set one segment attribute to a value
+    system.segments[0].fluidCode = "X"
+    pt.add_system_attributes_to_segment(system)
+    # Should not override existing value
+    assert system.segments[0].fluidCode == "X"
+    # Should set missing values
+    assert system.segments[0].insulationType == "test"
+    assert system.segments[1].fluidCode == "W"
+    assert system.segments[1].insulationType == "test"
+
+
+def test_add_system_attributes_to_segment_empty_segments():
+    attrs = {"fluidCode": "W"}
+    system = piping.PipingNetworkSystem(**attrs)
+    # Should not raise, should return system unchanged
+    result = pt.add_system_attributes_to_segment(system)
+    assert result is system

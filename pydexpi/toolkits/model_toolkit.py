@@ -9,6 +9,7 @@ dexpi model/conceptual model.
 from collections.abc import Callable
 from typing import Any, get_origin, get_type_hints
 
+import pydexpi.toolkits.base_model_utils as bmu
 from pydexpi.dexpi_classes.customization import CustomAttributeOwner
 from pydexpi.dexpi_classes.dexpiBaseModels import DexpiBaseModel
 from pydexpi.dexpi_classes.dexpiModel import ConceptualModel, DexpiModel
@@ -146,15 +147,10 @@ def get_all_instances_in_model(
         elif isinstance(obj, dexpi_classes) and obj not in discovered_instances:
             discovered_instances.append(obj)
 
-        for attr_name in obj.__class__.model_fields:
-            # Skip attributes that compositional
-            attr_schema = obj.__class__.model_fields[attr_name].json_schema_extra
-            if attr_schema is not None:
-                attr_type = attr_schema["attribute_category"]
-                if attr_type != "composition":
-                    continue
-            attr_value = getattr(obj, attr_name)
+        # Get all compositional attributes
+        attrs = bmu.get_composition_attributes(obj)
 
+        for attr_value in attrs.values():
             if isinstance(attr_value, DexpiBaseModel):
                 discovered_instances = discover_instances(attr_value, discovered_instances)
             elif isinstance(attr_value, list):

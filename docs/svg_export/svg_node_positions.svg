@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="199.41539084884093" height="297.0" viewBox="-10.0 -162.765 116.0 172.765">
+  <rect x="-10.0" y="-162.765" width="199.41539084884093" height="297.0" fill="#f0f0f0" />
+  <metadata>DEXPI RepresentationGroup representing: fb232417-3635-4f34-a942-046ea03bd8c3</metadata>
+  <g id="fb232417-3635-4f34-a942-046ea03bd8c3" class="representation-group">
+    <g class="static">
+      <g>
+        <g id="CENTRIFUGAL_PUMP_SHAPE" transform="translate(84.00,-143.00) scale(0.70,0.70)">
+          <ellipse cx="0.0" cy="-0.0" rx="7.5" ry="7.5" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+          <polyline points="-7.5,-0.0 7.5,-0.0" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+          <polyline points="0.0,7.5 7.5,-0.0 0.0,-7.5" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+        </g>
+      </g>
+    </g>
+    <g class="equipmenttagnamelabel">
+      <text x="84.0" y="-152.765" text-anchor="middle" dy="0.5em" font-family="'Calibri', Arial" font-size="4.5" fill="rgb(0,0,0)">P4711</text>
+    </g>
+    <g class="equipmentbarlabel">
+      <polyline points="6.0,-32.0 96.0,-32.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-6.0 6.0,-32.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="96.0,-6.0 96.0,-32.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="66.0,-6.0 66.0,-32.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-28.75 96.0,-28.75" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-25.5 96.0,-25.5" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-22.25 96.0,-22.25" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-19.0 96.0,-19.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-15.75 96.0,-15.75" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-12.5 96.0,-12.5" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-9.25 96.0,-9.25" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="6.0,-6.0 96.0,-6.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <polyline points="81.0,-15.75 81.0,-6.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+      <text x="6.8" y="-29.55" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Ident</text>
+      <text x="81.0" y="-29.55" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">P4711</text>
+      <text x="6.8" y="-26.3" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Press. Casing min.</text>
+      <text x="81.0" y="-26.3" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">-0.5 barg</text>
+      <text x="6.8" y="-23.05" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Press. Casing max.</text>
+      <text x="81.0" y="-23.05" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">60 barg</text>
+      <text x="6.8" y="-19.8" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Temp. Casing min.</text>
+      <text x="81.0" y="-19.8" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">-45 °C</text>
+      <text x="6.8" y="-16.55" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Temp. Casing max.</text>
+      <text x="81.0" y="-16.55" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">80 °C</text>
+      <text x="6.8" y="-13.3" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Capacity / Design Press. Head</text>
+      <text x="73.5" y="-13.3" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">200 m³/h</text>
+      <text x="88.5" y="-13.3" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">10 m</text>
+      <text x="6.8" y="-10.05" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Design Speed / Design Power max. Diam. Wheel</text>
+      <text x="73.5" y="-10.05" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">600 1/min</text>
+      <text x="88.5" y="-10.05" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">60 kW</text>
+      <text x="6.8" y="-6.8" text-anchor="start" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">Material Case Press. Side / Material Impeller</text>
+      <text x="73.5" y="-6.8" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">1.4306</text>
+      <text x="88.5" y="-6.8" text-anchor="middle" dy="0.0em" font-family="'Calibri', Arial" font-size="2.5" fill="rgb(0,0,0)">1.4308</text>
+    </g>
+    <g id="2dcffbe7-d4bc-449c-8b9e-990f72855b7f" class="representation-group">
+      <g class="static">
+        <g>
+          <g id="NOZZLE_SHAPE" transform="translate(78.75,-143.00) rotate(180.00) scale(0.80,0.40)">
+            <polyline points="5.0,-2.5 5.0,2.5" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+            <polyline points="5.0,-0.0 0.0,-0.0" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+          </g>
+        </g>
+      </g>
+      <g class="nozzlestandardlabel">
+        <text x="75.95" y="-146.36" text-anchor="middle" dy="0.5em" font-family="'Calibri', Arial" font-size="3.0" fill="rgb(0,0,0)">N1</text>
+        <text x="75.95" y="-140.66" text-anchor="middle" dy="0.5em" font-family="'Calibri', Arial" font-size="3.0" fill="rgb(0,0,0)">80</text>
+      </g>
+      <g id="2dcffbe7-d4bc-449c-8b9e-990f72855b7f" class="representation-group">
+        <g class="node-position">
+          <polyline points="73.75,-143.0 75.75,-143.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+          <polyline points="74.75,-142.0 74.75,-144.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+        </g>
+      </g>
+      <g class="node-position">
+        <polyline points="73.75,-143.0 75.75,-143.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+        <polyline points="74.75,-142.0 74.75,-144.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+      </g>
+    </g>
+    <g id="fee806b7-bc00-4dee-b8e2-e416b8572b48" class="representation-group">
+      <g class="static">
+        <g>
+          <g id="NOZZLE_SHAPE" transform="translate(89.25,-143.00) scale(0.80,0.40)">
+            <polyline points="5.0,-2.5 5.0,2.5" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+            <polyline points="5.0,-0.0 0.0,-0.0" fill="none" stroke="rgb(127,0,0)" stroke-width="0.3" vector-effect="non-scaling-stroke" />
+          </g>
+        </g>
+      </g>
+      <g class="nozzlestandardlabel">
+        <text x="92.05" y="-146.36" text-anchor="middle" dy="0.5em" font-family="'Calibri', Arial" font-size="3.0" fill="rgb(0,0,0)">N2</text>
+        <text x="92.05" y="-140.66" text-anchor="middle" dy="0.5em" font-family="'Calibri', Arial" font-size="3.0" fill="rgb(0,0,0)">80</text>
+      </g>
+      <g id="fee806b7-bc00-4dee-b8e2-e416b8572b48" class="representation-group">
+        <g class="node-position">
+          <polyline points="92.25,-143.0 94.25,-143.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+          <polyline points="93.25,-142.0 93.25,-144.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+        </g>
+      </g>
+      <g class="node-position">
+        <polyline points="92.25,-143.0 94.25,-143.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+        <polyline points="93.25,-142.0 93.25,-144.0" fill="none" stroke="rgb(0,0,0)" stroke-width="0.09" vector-effect="non-scaling-stroke" />
+      </g>
+    </g>
+  </g>
+</svg>
